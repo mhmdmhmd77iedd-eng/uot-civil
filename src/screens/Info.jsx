@@ -4,11 +4,18 @@ import { DEFAULT_ANNOUNCEMENTS, DEFAULT_EXAMS, BOLOGNA_FAQ, BOLOGNA_NOTE } from 
 import { COURSES, courseById, STAGES } from '../data/catalog'
 import { I, HUES } from '../components/icons'
 import { Bar, Sheet, Empty, tap, useToast } from '../components/ui'
+import { sb, useAcct } from '../lib/sb'
 
 export function News({ back }) {
   const s = useStore()
   const toast = useToast()
-  const list = (s.announcements ?? DEFAULT_ANNOUNCEMENTS).filter((a) => !a.stage || a.stage === s.profile.stage)
+  const acct = useAcct()
+  const srv = (s.srvAnns || []).map((a) => ({ id: 'srv' + a.id, sid: a.id, title: a.title, body: a.body, urgent: a.urgent, at: a.created_at?.slice(0, 10), sec: !!a.section_id }))
+  const list = [...srv, ...(s.announcements ?? DEFAULT_ANNOUNCEMENTS).filter((a) => !a.stage || a.stage === s.profile.stage)]
+  async function seen(a) {
+    tap(); setState((st) => ({ seenAnns: { ...st.seenAnns, [a.id]: true } }))
+    if (acct.user) try { await sb.from('announcement_seen').insert({ announcement_id: a.sid, user_id: acct.user.id }) } catch {}
+  }
   const [open, setOpen] = useState(false)
   const [f, setF] = useState({ title: '', body: '', urgent: false, stage: s.profile.stage })
   const like = (a) => { tap(); setState((st) => ({ likes: { ...st.likes, [a.id]: !st.likes[a.id] } })) }
@@ -26,11 +33,16 @@ export function News({ back }) {
           <div key={a.id} className="card">
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
               {a.urgent && <span className="pill urgent"><I n="bell" size={13} />عاجل</span>}
+              {a.sec && <span className="pill gold">من ممثل شعبتك</span>}
               <span className="small muted">{a.at}</span>
             </div>
             <b style={{ fontSize: 15.5 }}>{a.title}</b>
             <p style={{ margin: '6px 0 10px', whiteSpace: 'pre-wrap', fontSize: 14 }}>{a.body}</p>
-            <button className={`btn sm ${s.likes[a.id] ? 'ac' : 'ghost'}`} onClick={() => like(a)}><I n="heart" size={16} style={s.likes[a.id] ? { fill: 'currentColor' } : null} />أعجبني</button>
+            {a.sid ? (
+              <button className={`btn sm ${s.seenAnns?.[a.id] ? 'soft' : 'ac'}`} disabled={s.seenAnns?.[a.id]} onClick={() => seen(a)}><I n="check" size={16} />{s.seenAnns?.[a.id] ? 'شفته' : 'شفته، تمام'}</button>
+            ) : (
+              <button className={`btn sm ${s.likes[a.id] ? 'ac' : 'ghost'}`} onClick={() => like(a)}><I n="heart" size={16} style={s.likes[a.id] ? { fill: 'currentColor' } : null} />أعجبني</button>
+            )}
           </div>
         ))}
       </div>
@@ -55,7 +67,7 @@ export function Bologna({ back }) {
   return (
     <div className="screen">
       <Bar title="دليل بولونيا" sub="أكثر الأسئلة تكراراً، بكلام بسيط" onBack={back} />
-      <div className="demo">ℹ️<span>{BOLOGNA_NOTE}</span></div>
+      <div className="demo"><I n="info" size={18} style={{ color: 'var(--mid)', marginTop: 1 }} /><span>{BOLOGNA_NOTE}</span></div>
       <div className="stack stagger">
         {BOLOGNA_FAQ.map((x, i) => <details key={i} className="faq"><summary>{x.q}</summary><p>{x.a}</p></details>)}
       </div>

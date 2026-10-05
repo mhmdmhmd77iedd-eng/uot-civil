@@ -24,6 +24,8 @@ const initial = {
   helpful: {}, // fileId -> true (تقييم «مفيد»)
   installHidden: false,
   ttKey: null, // جدول الشعبة المستورد
+  srvAnns: [], // إعلانات الخادم (عامة + الشعبة)
+  seenAnns: {}, // annId -> true (زر «شفته»)
   seenWelcome: false,
 }
 

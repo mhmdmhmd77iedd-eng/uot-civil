@@ -10,6 +10,8 @@ import MapScreen from './screens/MapScreen'
 import Calc from './screens/Calc'
 import Schedule from './screens/Schedule'
 import { checkReminders } from './lib/schedule'
+import RepPanel from './screens/RepPanel'
+import { startAuth } from './lib/sb'
 import Requests from './screens/Requests'
 import Settings from './screens/Settings'
 import Developer from './screens/Developer'
@@ -58,6 +60,8 @@ export default function App() {
   }, [])
   const back = useCallback(() => history.back(), [])
 
+  useEffect(() => { startAuth() }, [])
+
   // تنبيهات الكوزات والتقارير: نفحص كل دقيقة وعند فتح التطبيق
   useEffect(() => {
     if (!profile) return
@@ -78,7 +82,7 @@ export default function App() {
 
   const props = { ...cur.p, nav, back }
   const screens = {
-    home: Home, library: Library, course: Course, upload: Upload, map: MapScreen, calc: Calc, schedule: Schedule,
+    home: Home, library: Library, course: Course, upload: Upload, map: MapScreen, calc: Calc, schedule: Schedule, rep: RepPanel,
     requests: Requests, settings: Settings, developer: Developer, news: News, bologna: Bologna, exams: Exams,
     profile: () => <Onboarding initial={profile} onDone={back} />,
   }

@@ -5,6 +5,7 @@ import { DAYS, CLASS_KINDS, TASK_TYPES, taskType, uid, ymd, toMin, fmtTime, dueT
 import { courseHue } from './Home'
 import { timetableFor } from '../data/timetables'
 import { currentSemester } from '../lib/profile'
+import { useAcct, isRep, publishTask, deleteSrvTask } from '../lib/sb'
 import { I } from '../components/icons'
 import { Bar, Empty, Sheet, tap, useToast } from '../components/ui'
 
@@ -55,12 +56,21 @@ function ClassForm({ init, defDay, profile, onDone }) {
 
 function TaskForm({ init, profile, onDone }) {
   const toast = useToast()
+  const acct = useAcct()
+  const rep = isRep(acct) && !!acct.section
+  const [share, setShare] = useState(rep && !init)
+  const srv = init?.src === 'srv'
   const tomorrow = new Date(Date.now() + 864e5)
   const [f, setF] = useState(init || { type: 'quiz', course: '', title: '', due: ymd(tomorrow), time: '', note: '' })
   const ok = f.due && (f.title.trim() || f.course)
-  function save() {
+  async function save() {
     tap()
     const rec = { ...f, title: f.title.trim() || taskType(f.type).n }
+    if (share && !init) {
+      const e = await publishTask(rec)
+      toast(e ? 'ما انشر للشعبة، تأكد من الإنترنت' : 'انشر لكل الشعبة، وراح ينبههم قبل الموعد بيوم')
+      return onDone()
+    }
     setState((s) => ({ tasks: init ? s.tasks.map((t) => (t.id === init.id ? rec : t)) : [...s.tasks, { ...rec, id: uid('t'), done: false, src: 'me' }] }))
     toast(init ? 'انحفظ التعديل' : 'انضاف، وراح ننبهك قبل الموعد بيوم')
     onDone()
@@ -77,8 +87,11 @@ function TaskForm({ init, profile, onDone }) {
         <label className="field"><span>الساعة</span><input className="input" type="time" value={f.time} onChange={(e) => setF({ ...f, time: e.target.value })} /></label>
       </div>
       <label className="field"><span>ملاحظة</span><input className="input" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} placeholder="مثلاً: الفصل الثالث فقط" /></label>
-      <button className="btn ac full" disabled={!ok} onClick={save}>{init ? 'حفظ' : 'إضافة'}</button>
-      {init && <button className="btn danger full" style={{ marginTop: 10 }} onClick={() => { setState((s) => ({ tasks: s.tasks.filter((t) => t.id !== init.id) })); toast('انحذف'); onDone() }}><I n="trash" size={18} />حذف</button>}
+      {rep && !init && <label className="chip" style={{ display: 'inline-flex', gap: 8, marginBottom: 14 }}><input type="checkbox" checked={share} onChange={(e) => setShare(e.target.checked)} /> انشرها لكل الشعبة</label>}
+      {srv && <div className="small muted" style={{ marginBottom: 10 }}>هذا الموعد نشره ممثل الشعبة.</div>}
+      {!srv && <button className="btn ac full" disabled={!ok} onClick={save}>{init ? 'حفظ' : 'إضافة'}</button>}
+      {init && !srv && <button className="btn danger full" style={{ marginTop: 10 }} onClick={() => { setState((s) => ({ tasks: s.tasks.filter((t) => t.id !== init.id) })); toast('انحذف'); onDone() }}><I n="trash" size={18} />حذف</button>}
+      {srv && rep && <button className="btn danger full" onClick={async () => { const e = await deleteSrvTask(init.sid); toast(e ? 'ما انحذف' : 'انحذف من الشعبة'); onDone() }}><I n="trash" size={18} />حذف من الشعبة</button>}
     </>
   )
 }
@@ -92,7 +105,7 @@ export function TaskRow({ t, onEdit }) {
       <button className="ck" onClick={toggle} aria-label={t.done ? 'رجّعها' : 'خلصت'}>{t.done && <I n="check" size={16} />}</button>
       <div style={{ minWidth: 0 }}>
         <div className="t">{t.title}</div>
-        <div className="m">{tt.n}{t.course ? ` · ${courseName(t.course)}` : ''}{t.note ? ` · ${t.note}` : ''}</div>
+        <div className="m">{t.src === 'srv' && <span className="pill gold" style={{ marginInlineEnd: 4 }}>من الممثل</span>}{tt.n}{t.course ? ` · ${courseName(t.course)}` : ''}{t.note ? ` · ${t.note}` : ''}</div>
       </div>
       {!t.done && <div className="due"><b>{d.b}</b>{d.s}</div>}
     </div>

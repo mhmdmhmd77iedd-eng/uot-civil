@@ -6,6 +6,7 @@ import { I, HUES } from '../components/icons'
 import { Bar, Sheet, tap, useToast } from '../components/ui'
 import { useInstall } from '../lib/install'
 import { IosGuide } from '../components/Install'
+import { AccountCard } from '../components/Account'
 import { askNotify, notifySupported } from '../lib/schedule'
 
 export function DevCard({ nav }) {
@@ -56,6 +57,7 @@ export default function Settings({ nav }) {
   return (
     <div className="screen">
       <Bar title="حسابي والإعدادات" />
+      <div style={{ marginBottom: 12 }}><AccountCard nav={nav} /></div>
       <button className="row" onClick={() => nav('profile')}>
         <span className="ic"><I n="user" /></span><div><div className="t">{s.profile.name || 'طالب'}</div><div className="m">{label(s.profile)}</div></div><span className="end">تعديل</span>
       </button>
