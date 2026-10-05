@@ -1,4 +1,5 @@
 import { useEffect, useState, createContext, useContext, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { CREDIT, DEV, APP_NAME, DISCLAIMER } from '../lib/brand'
 import { VERSION } from '../lib/store'
 import { I } from './icons'
@@ -33,7 +34,7 @@ export function Sheet({ open, onClose, children, title }) {
     return () => removeEventListener('keydown', k)
   }, [open, onClose])
   if (!open) return null
-  return (
+  return createPortal(
     <>
       <div className="sheet-bg" onClick={onClose} />
       <div className="sheet" role="dialog" aria-label={title}>
@@ -41,7 +42,8 @@ export function Sheet({ open, onClose, children, title }) {
         {title && <div className="bar"><h2>{title}</h2></div>}
         {children}
       </div>
-    </>
+    </>,
+    document.body
   )
 }
 

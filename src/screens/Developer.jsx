@@ -1,9 +1,10 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { DEV } from '../lib/brand'
 import { Bar, tap, useToast } from '../components/ui'
 import { I, HUES } from '../components/icons'
 
-const GAL = ['04-gallery-piano', '05-gallery-cafe', '06-gallery-call']
+const GAL = ['08-gallery-car', '09-gallery-site', '10-gallery-evening', '04-gallery-piano', '11-gallery-night', '06-gallery-call', '05-gallery-cafe']
 const SERVICES = [['build', HUES.clay], ['mobile', HUES.indigo], ['sheet', HUES.sage]]
 
 export default function Developer({ back }) {
@@ -48,7 +49,7 @@ export default function Developer({ back }) {
 
       <div className="sec">صور</div>
       <div className="gal">{GAL.map((g) => <img key={g} src={`dev/${g}.webp`} alt="" loading="lazy" onClick={() => setBig(g)} />)}</div>
-      {big && <div className="lightbox" onClick={() => setBig(null)}><img src={`dev/${big}.webp`} alt="" /></div>}
+      {big && createPortal(<div className="lightbox" onClick={() => setBig(null)}><img src={`dev/${big}.webp`} alt="" /></div>, document.body)}
     </div>
   )
 }
