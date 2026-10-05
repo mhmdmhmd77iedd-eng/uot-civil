@@ -8,6 +8,8 @@ import Course from './screens/Course'
 import Upload from './screens/Upload'
 import MapScreen from './screens/MapScreen'
 import Calc from './screens/Calc'
+import Schedule from './screens/Schedule'
+import { checkReminders } from './lib/schedule'
 import Requests from './screens/Requests'
 import Settings from './screens/Settings'
 import Developer from './screens/Developer'
@@ -16,8 +18,8 @@ import { News, Bologna, Exams } from './screens/Info'
 
 const TABS = [
   { id: 'home', n: 'الرئيسية', i: 'home' },
+  { id: 'schedule', n: 'جدولي', i: 'week' },
   { id: 'library', n: 'المكتبة', i: 'books' },
-  { id: 'calc', n: 'السعي', i: 'calc' },
   { id: 'news', n: 'الإعلانات', i: 'bell' },
   { id: 'settings', n: 'حسابي', i: 'user' },
 ]
@@ -56,6 +58,16 @@ export default function App() {
   }, [])
   const back = useCallback(() => history.back(), [])
 
+  // تنبيهات الكوزات والتقارير: نفحص كل دقيقة وعند فتح التطبيق
+  useEffect(() => {
+    if (!profile) return
+    checkReminders()
+    const t = setInterval(() => checkReminders(), 60000)
+    const v = () => document.visibilityState === 'visible' && checkReminders()
+    document.addEventListener('visibilitychange', v)
+    return () => { clearInterval(t); document.removeEventListener('visibilitychange', v) }
+  }, [profile])
+
   useEffect(() => {
     const onPop = () => transition(() => setStack((st) => (st.length > 1 ? st.slice(0, -1) : st)))
     addEventListener('popstate', onPop)
@@ -66,7 +78,7 @@ export default function App() {
 
   const props = { ...cur.p, nav, back }
   const screens = {
-    home: Home, library: Library, course: Course, upload: Upload, map: MapScreen, calc: Calc,
+    home: Home, library: Library, course: Course, upload: Upload, map: MapScreen, calc: Calc, schedule: Schedule,
     requests: Requests, settings: Settings, developer: Developer, news: News, bologna: Bologna, exams: Exams,
     profile: () => <Onboarding initial={profile} onDone={back} />,
   }

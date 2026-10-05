@@ -4,6 +4,9 @@ import { label } from '../lib/profile'
 import { DEV, APP_NAME, DISCLAIMER } from '../lib/brand'
 import { I, HUES } from '../components/icons'
 import { Bar, Sheet, tap, useToast } from '../components/ui'
+import { useInstall } from '../lib/install'
+import { IosGuide } from '../components/Install'
+import { askNotify, notifySupported } from '../lib/schedule'
 
 export function DevCard({ nav }) {
   const toast = useToast()
@@ -32,6 +35,9 @@ export default function Settings({ nav }) {
   const file = useRef()
   const [bk, setBk] = useState(false)
   const [taps, setTaps] = useState(0)
+  const ins = useInstall()
+  const [guide, setGuide] = useState(false)
+  const [perm, setPerm] = useState(notifySupported() ? Notification.permission : 'unsupported')
   const themes = [{ id: 'auto', n: 'تلقائي' }, { id: 'light', n: 'فاتح' }, { id: 'dark', n: 'ليلي' }]
 
   async function imp(e) {
@@ -56,6 +62,15 @@ export default function Settings({ nav }) {
 
       <div className="sec">المظهر</div>
       <div className="tabs">{themes.map((t) => <button key={t.id} className={s.theme === t.id ? 'on' : ''} onClick={() => { tap(); setState({ theme: t.id }) }}>{t.n}</button>)}</div>
+
+      <div className="sec">التطبيق</div>
+      <div className="stack">
+        {ins.available && <button className="row" style={{ '--h': HUES.amber }} onClick={async () => { tap(); if (ins.can) { if (await ins.prompt()) toast('انثبت التطبيق') } else setGuide(true) }}><span className="ic"><I n="install" /></span><div><div className="t">ثبّت التطبيق على الشاشة</div><div className="m">أيقونة على شاشتك ويشتغل بدون نت</div></div><I n="chev" size={18} className="chev" /></button>}
+        <button className="row" style={{ '--h': HUES.ocean }} onClick={async () => { tap(); const r = await askNotify(); setPerm(r); toast(r === 'granted' ? 'التنبيهات شغالة' : r === 'unsupported' ? 'جهازك ما يدعمها، على الآيفون ثبّت التطبيق أولاً' : 'فعّلها من إعدادات المتصفح') }}>
+          <span className="ic"><I n="alarm" /></span><div><div className="t">تنبيهات الكوزات والتقارير</div><div className="m">قبل الموعد بيوم وصباح نفس اليوم</div></div><span className={`pill ${perm === 'granted' ? 'ok' : 'off'}`}>{perm === 'granted' ? 'شغالة' : 'مطفية'}</span>
+        </button>
+      </div>
+      <IosGuide open={guide} onClose={() => setGuide(false)} />
 
       <div className="sec">بياناتي</div>
       <div className="stack">
@@ -83,7 +98,6 @@ export default function Settings({ nav }) {
       <div className="card small" style={{ marginTop: 10 }}>
         <div><b>{APP_NAME}</b> · <span onClick={versionTap} style={{ cursor: 'default', userSelect: 'none' }}>الإصدار {VERSION}</span></div>
         <div className="muted">{DISCLAIMER}.</div>
-        <div className="muted" style={{ marginTop: 4 }}>لتثبيته كتطبيق: من المتصفح اختر «إضافة إلى الشاشة الرئيسية».</div>
       </div>
 
       <Sheet open={bk} onClose={() => setBk(false)} title="النسخ اليومية">

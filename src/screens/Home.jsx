@@ -5,6 +5,8 @@ import { DEFAULT_ANNOUNCEMENTS, DEFAULT_EXAMS } from '../data/content'
 import { label, greeting, currentSemester } from '../lib/profile'
 import { tap } from '../components/ui'
 import { I, HUES, Bridge } from '../components/icons'
+import { InstallCard } from '../components/Install'
+import { nextClass, upcomingTasks, taskType, dueText, fmtTime, courseName, DAYS, weekSummary, daysLeft, dayIdx } from '../lib/schedule'
 
 function useNow() {
   const [n, setN] = useState(Date.now())
@@ -20,13 +22,20 @@ export default function Home({ nav }) {
   const s = useStore()
   const p = s.profile
   const now = useNow()
-  const exams = (s.exams ?? DEFAULT_EXAMS).filter((e) => e.stage === p.stage && new Date(e.date).getTime() > now).sort((a, b) => new Date(a.date) - new Date(b.date))
+  // الامتحان القادم: من جدول المشرف أو من امتحانات الطالب بجدولي
+  const fromTasks = s.tasks.filter((t) => t.type === 'exam' && !t.done).map((t) => ({ course: t.course, title: t.title, kind: 'امتحان', date: `${t.due}T${t.time || '08:30'}` }))
+  const exams = [...(s.exams ?? DEFAULT_EXAMS).filter((e) => e.stage === p.stage), ...fromTasks].filter((e) => new Date(e.date).getTime() > now).sort((a, b) => new Date(a.date) - new Date(b.date))
   const next = exams[0]
+  const examMode = next && new Date(next.date).getTime() - now < 7 * 864e5
   const anns = (s.announcements ?? DEFAULT_ANNOUNCEMENTS).filter((a) => !a.stage || a.stage === p.stage).slice(0, 2)
   const sem = currentSemester()
   const mine = coursesFor(p).filter((c) => c.sem === sem)
   const pending = s.requests.filter((r) => r.mine && !r.done).length
   const g = greeting()
+  const nc = nextClass(s.classes, new Date(now))
+  const up = upcomingTasks(s.tasks, new Date(now)).slice(0, 4)
+  const wk = weekSummary(s, new Date(now))
+  const weekStart = [6, 0, 1].includes(dayIdx(new Date(now))) // الجمعة والسبت والأحد: ملخص بداية الأسبوع
 
   let cd = null
   if (next) {
@@ -35,13 +44,13 @@ export default function Home({ nav }) {
   }
 
   const tiles = [
+    { i: 'week', h: HUES.ocean, t: 'جدولي', go: 'schedule' },
     { i: 'books', h: HUES.teal, t: 'المكتبة', go: 'library' },
-    { i: 'calc', h: HUES.amber, t: 'حاسبة السعي', go: 'calc' },
-    { i: 'route', h: HUES.ocean, t: 'خريطة موادي', go: 'map' },
+    { i: 'target', h: HUES.rose, t: 'وضعي بالمواد', go: 'calc' },
+    { i: 'route', h: HUES.indigo, t: 'خريطة موادي', go: 'map' },
     { i: 'ask', h: HUES.clay, t: 'الطلبات', go: 'requests' },
-    { i: 'cap', h: HUES.indigo, t: 'دليل بولونيا', go: 'bologna' },
-    { i: 'megaphone', h: HUES.plum, t: 'الإعلانات', go: 'news' },
     { i: 'calendar', h: HUES.sage, t: 'الامتحانات', go: 'exams' },
+    { i: 'cap', h: HUES.amber, t: 'دليل بولونيا', go: 'bologna' },
     { i: 'hardhat', h: HUES.bronze, t: 'المطوّر', go: 'developer' },
   ]
 
@@ -56,22 +65,75 @@ export default function Home({ nav }) {
       </div>
 
       {next ? (
-        <button className="hero" style={{ border: 'none', width: '100%', textAlign: 'right', cursor: 'pointer' }} onClick={() => nav('course', { id: next.course })}>
+        <div className={`hero ${examMode ? 'exam' : ''}`} role="button" style={{ cursor: 'pointer' }} onClick={() => next.course && nav('course', { id: next.course })}>
           <div className="grid" /><Bridge className="deco" />
-          <div className="l">الامتحان القادم{next.example ? ' (مثال)' : ''}</div>
+          <div className="l">{examMode ? 'وضع الامتحانات' : 'الامتحان القادم'}{next.example ? ' (مثال)' : ''}</div>
           <div className="s">{courseById[next.course]?.name || next.title} · {next.kind || 'نهائي'}</div>
           <div className="cd"><div><b>{cd.d}</b><span>يوم</span></div><div><b>{String(cd.h).padStart(2, '0')}</b><span>ساعة</span></div><div><b>{String(cd.m).padStart(2, '0')}</b><span>دقيقة</span></div></div>
-        </button>
+          {examMode && next.course && (
+            <div style={{ display: 'flex', gap: 8, marginTop: 14, position: 'relative', zIndex: 1 }}>
+              <button className="btn sm" style={{ background: '#fff', color: '#9a3412' }} onClick={(e) => { e.stopPropagation(); tap(); nav('course', { id: next.course, type: 'past' }) }}><I n="paper" size={17} />الأسئلة السابقة</button>
+              <button className="btn sm" style={{ background: 'rgba(255,255,255,.18)', color: '#fff' }} onClick={(e) => { e.stopPropagation(); tap(); nav('course', { id: next.course }) }}><I n="info" size={17} />التعليمات</button>
+            </div>
+          )}
+        </div>
       ) : (
-        <div className="hero">
+        <div className="hero" role="button" style={{ cursor: 'pointer' }} onClick={() => nav('schedule')}>
           <div className="grid" /><Bridge className="deco" />
-          <div className="l">الامتحانات</div>
-          <div className="s" style={{ marginBottom: 6 }}>ما انشر جدول الامتحانات بعد</div>
-          <div style={{ fontSize: 13, opacity: .9, maxWidth: '58%' }}>أول ما ينزل الجدول يظهر هنا العد التنازلي لامتحانك القادم.</div>
+          <div className="l">{nc ? (nc.live ? 'محاضرتك هسه' : 'محاضرتك الجاية') : 'جدولي'}</div>
+          {nc ? (
+            <>
+              <div className="s" style={{ marginBottom: 8 }}>{courseName(nc.c.course)}</div>
+              <div className="cd">
+                <div><b style={{ fontSize: 17 }}>{nc.inDays === 0 ? 'اليوم' : nc.inDays === 1 ? 'باجر' : DAYS[nc.c.day]}</b><span>اليوم</span></div>
+                <div><b style={{ fontSize: 17 }}>{fmtTime(nc.c.start)}</b><span>الوقت</span></div>
+                {nc.c.room && <div><b style={{ fontSize: 17 }}>{nc.c.room}</b><span>القاعة</span></div>}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="s" style={{ marginBottom: 6 }}>رتّب محاضراتك ومواعيدك</div>
+              <div style={{ fontSize: 13, opacity: .92, maxWidth: '62%' }}>اكتب جدولك مرة وحدة، ونذكّرك بالكوزات والتقارير قبل موعدها بيوم.</div>
+            </>
+          )}
         </div>
       )}
 
-      <button className="btn full" style={{ margin: '16px 0 4px' }} onClick={() => { tap(); nav('library') }}><I n="books" size={20} />افتح موادي</button>
+      <InstallCard />
+
+      {up.length > 0 && (
+        <>
+          <div className="sec">قريباً عليك <button onClick={() => nav('schedule', { tab: 'tasks' })}>الكل</button></div>
+          <div className="strip">
+            {up.map((t) => {
+              const tt = taskType(t.type), d = dueText(t, new Date(now))
+              const soon = daysLeft(t, new Date(now)) <= 1
+              return (
+                <button key={t.id} className="mini" style={{ '--h': soon ? 'var(--bad)' : tt.h }} onClick={() => nav('schedule', { tab: 'tasks' })}>
+                  <span className="k"><I n={tt.i} size={15} />{tt.n} · {typeof d.b === 'number' ? `باقي ${d.b} ${d.s}` : `${d.b} ${d.s}`}</span>
+                  <span className="t">{t.title}</span>
+                  <span className="m">{courseName(t.course)}</span>
+                </button>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      {(s.classes.length > 0 || s.tasks.length > 0) && (
+        <div className="card" style={{ marginTop: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <I n="chart" size={19} style={{ color: 'var(--ac)' }} /><b style={{ fontSize: 14 }}>{weekStart ? 'ملخص أسبوعك الجديد' : 'أسبوعك'}</b>
+          </div>
+          <div className="stat">
+            <div><b>{wk.lectures}</b>محاضرة بالأسبوع</div>
+            <div><b style={{ color: wk.left ? 'var(--mid)' : undefined }}>{wk.left}</b>تسليم باقي</div>
+            <div><b style={{ color: 'var(--good)' }}>{wk.done}</b>خلصتها</div>
+          </div>
+        </div>
+      )}
+
+      <button className="btn ac full" style={{ margin: '16px 0 4px' }} onClick={() => { tap(); nav('library') }}><I n="books" size={20} />افتح موادي</button>
 
       <div className="sec">اختصارات</div>
       <div className="tiles stagger">

@@ -10,7 +10,7 @@ const YEARS = Array.from({ length: 12 }, (_, i) => new Date().getFullYear() - i)
 export default function Upload({ course: c0, type: t0, back, nav }) {
   const { uploads } = useStore()
   const toast = useToast()
-  const [f, setF] = useState({ course: c0 || '', type: t0 || 'notes', title: '', year: '', round: '', exam: '', author: '', url: '' })
+  const [f, setF] = useState({ official: (t0 || 'notes') === 'notes', course: c0 || '', type: t0 || 'notes', title: '', year: '', round: '', exam: '', author: '', url: '' })
   const [file, setFile] = useState(null)
   const [busy, setBusy] = useState(false)
   const [dup, setDup] = useState(null)
@@ -37,7 +37,7 @@ export default function Upload({ course: c0, type: t0, back, nav }) {
     setBusy(true)
     try {
       const id = 'f' + Date.now().toString(36)
-      const rec = { id, course: f.course, type: f.type, title: f.title.trim(), year: f.year ? Number(f.year) : null, round: f.round ? Number(f.round) : null, exam: f.exam || null, author: f.author.trim() || null, at: new Date().toISOString().slice(0, 10) }
+      const rec = { id, official: f.official, course: f.course, type: f.type, title: f.title.trim(), year: f.year ? Number(f.year) : null, round: f.round ? Number(f.round) : null, exam: f.exam || null, author: f.author.trim() || null, at: new Date().toISOString().slice(0, 10) }
       if (isVideo) Object.assign(rec, { kind: 'link', url: f.url.trim() })
       else { await putBlob(id, file); Object.assign(rec, { kind: 'file', hash: file._hash || (await fileHash(file)), size: file.size, name: file.name }) }
       setState((s) => ({ uploads: [rec, ...s.uploads] }))
@@ -65,7 +65,14 @@ export default function Upload({ course: c0, type: t0, back, nav }) {
       </label>
 
       <div className="field"><span>النوع *</span>
-        <div className="chips">{FILE_TYPES.map((t) => <button key={t.id} className={`chip ${f.type === t.id ? 'on' : ''}`} onClick={() => setF({ ...f, type: t.id })}><I n={t.icon} size={16} />{t.name}</button>)}</div>
+        <div className="chips">{FILE_TYPES.map((t) => <button key={t.id} className={`chip ${f.type === t.id ? 'on' : ''}`} onClick={() => setF({ ...f, type: t.id, official: t.id === 'notes' })}><I n={t.icon} size={16} />{t.name}</button>)}</div>
+      </div>
+
+      <div className="field"><span>التصنيف *</span>
+        <div className="chips">
+          <button className={`chip ${f.official ? 'on' : ''}`} onClick={() => setF({ ...f, official: true })}><I n="seal" size={16} />معتمد من القسم</button>
+          <button className={`chip ${!f.official ? 'on' : ''}`} onClick={() => setF({ ...f, official: false })}>غير رسمي (ملخص، ترجمة، حلول طلاب)</button>
+        </div>
       </div>
 
       {isVideo ? (

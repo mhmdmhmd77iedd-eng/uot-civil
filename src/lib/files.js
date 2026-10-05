@@ -32,3 +32,6 @@ export function fmtSize(n) {
   if (n < 1024 * 1024) return Math.max(1, Math.round(n / 1024)) + ' KB'
   return (n / 1024 / 1024).toFixed(1) + ' MB'
 }
+
+// تصنيف الملف: «معتمد من القسم» أو «غير رسمي». الملفات القديمة: الملازم معتمدة والباقي غير رسمي
+export const isOfficial = (f) => (f.official ?? f.type === 'notes') ? 1 : 0

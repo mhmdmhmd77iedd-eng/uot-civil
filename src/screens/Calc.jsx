@@ -16,14 +16,24 @@ function Slider({ name, value, max, onChange }) {
   )
 }
 
-export default function Calc({ back }) {
-  const { profile, grades } = useStore()
+export default function Calc({ back, nav }) {
+  const { profile, grades, absences } = useStore()
   const toast = useToast()
   const [round, setRound] = useState(1)
   const [q, setQ] = useState({ saee: 22, mid: 6 })
   const r = calc({ ...q, round })
   const st = STATUS_TEXT[r.status]
   const courses = coursesFor(profile)
+  // ترتيب المواد من الأخطر للأسلم حسب الدرجات المكتوبة
+  const RISK = { blocked: 0, impossible: 0, hard: 1, work: 2, easy: 3, safe: 4 }
+  const status = courses.map((c) => {
+    const g = grades[c.id] || {}
+    const has = g.saee != null && g.saee !== ''
+    return { c, has, r: has ? calc({ saee: g.saee, mid: g.mid }) : null, abs: absences[c.id] || 0 }
+  }).sort((a, b) => (a.has ? RISK[a.r.status] : 9) - (b.has ? RISK[b.r.status] : 9))
+  const risky = status.filter((x) => x.has && RISK[x.r.status] <= 1).length
+  const safe = status.filter((x) => x.has && RISK[x.r.status] >= 3).length
+  const empty = status.filter((x) => !x.has).length
   const setG = (id, k, v) => setState((s) => ({ grades: { ...s.grades, [id]: { ...(s.grades[id] || {}), [k]: v } } }))
 
   async function xls() {
@@ -36,8 +46,29 @@ export default function Calc({ back }) {
   return (
     <div className="screen">
       <PrintFrame title="درجاتي وحاسبة السعي" />
-      <Bar title="حاسبة السعي" sub="حسب نظام بولونيا: سعي 40 + مد 10 + نهائي 50" onBack={back} />
+      <Bar title="وضعي بالمواد" sub="شوف المواد اللي تحتاج تركيز، وشكد تحتاج بكل نهائي" onBack={back} />
 
+      <div className="stat" style={{ marginBottom: 12 }}>
+        <div><b style={{ color: 'var(--bad)' }}>{risky}</b>تحتاج تركيز</div>
+        <div><b style={{ color: 'var(--good)' }}>{safe}</b>بأمان</div>
+        <div><b>{empty}</b>بدون درجات</div>
+      </div>
+      <div className="stack stagger">
+        {status.filter((x) => x.has).map(({ c, r, abs }) => {
+          const tone = STATUS_TEXT[r.status].tone
+          const pct = r.status === 'blocked' || r.status === 'impossible' ? 100 : Math.round((r.need / 50) * 100)
+          return (
+            <button key={c.id} className="row" onClick={() => nav('course', { id: c.id })}>
+              <div className="ring" style={{ '--p': r.status === 'blocked' || r.status === 'impossible' ? 100 : 100 - pct, '--c': `var(--${tone})`, width: 48, height: 48 }}><span style={{ width: 38, height: 38, fontSize: 13 }}>{r.status === 'blocked' ? '!' : r.need}</span></div>
+              <div style={{ minWidth: 0 }}><div className="t">{c.name}</div><div className={`m tone-${tone}`}>{r.status === 'blocked' ? 'سعيك أقل من 14' : r.need === 0 ? 'ناجح قبل النهائي' : `تحتاج ${r.need} بالنهائي`}{abs ? <span className="muted"> · {abs} غياب</span> : null}</div></div>
+              <I n="chev" size={18} className="chev" />
+            </button>
+          )
+        })}
+      </div>
+      {empty > 0 && <p className="small muted" style={{ margin: '10px 4px 0' }}>اكتب سعي ومد كل مادة تحت، أو من صفحة المادة نفسها. بعد ربط الخادم الدرجات تنزل تلقائياً من الدكتور أو الممثل.</p>}
+
+      <div className="sec">حاسبة سريعة</div>
       <div className="tabs no-print">
         <button className={round === 1 ? 'on' : ''} onClick={() => setRound(1)}>الدور الأول</button>
         <button className={round === 2 ? 'on' : ''} onClick={() => setRound(2)}>الدور الثاني</button>

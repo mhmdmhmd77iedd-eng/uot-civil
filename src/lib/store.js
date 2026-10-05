@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react'
 
 const KEY = 'almadani:v1'
 const BK = 'almadani:backups'
-export const VERSION = '1.1.0'
+export const VERSION = '1.2.0'
 
 const initial = {
   profile: null, // { branch, stage, shift, name }
@@ -16,7 +16,13 @@ const initial = {
   exams: null,
   uploads: [], // { id, course, type, year, round, title, hash, size, at, kind:'file'|'link', url }
   classes: [], // { id, course, day(0=السبت..5=الخميس), start, end, room, prof, kind, src:'me'|'rep' }
-  tasks: [], // { id, type, course, title, due, done, src }
+  tasks: [], // { id, type, course, title, due:'YYYY-MM-DD', time, note, done, src }
+  notified: {}, // taskId:1|0 -> أُرسل التنبيه
+  absences: {}, // courseId -> عدد الغيابات
+  absenceLimit: null, // حد الحرمان (غير معروف حالياً)
+  plan: {}, // خطة التسجيل لكل فصل { 1: [...], 2: [...] }؛ فارغة = مواد مرحلتي تلقائياً
+  helpful: {}, // fileId -> true (تقييم «مفيد»)
+  installHidden: false,
   seenWelcome: false,
 }
 
