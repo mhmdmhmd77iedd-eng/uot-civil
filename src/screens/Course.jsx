@@ -15,14 +15,14 @@ export default function Course({ id, type: type0, nav, back }) {
   const s = useStore()
   const c = courseById[id]
   const toast = useToast()
-  const [type, setType] = useState(type0 || 'notes')
+  const [type, setType] = useState(type0 || 'lectures')
   const [edit, setEdit] = useState(false)
   const [rules, setRules] = useState('')
   if (!c) return <div className="screen"><Bar title="المادة غير موجودة" onBack={back} /></div>
 
   // المعتمد من القسم يطلع أول، وبعده الأحدث
   const all = [...(s.srvFiles || []), ...s.uploads].filter((u) => u.course === id)
-  const files = all.filter((u) => u.type === type).sort((a, b) => (isOfficial(b) - isOfficial(a)) || (b.helpful ? 1 : 0) - (a.helpful ? 1 : 0) || (b.year || 0) - (a.year || 0))
+  const files = all.filter((u) => u.type === type).sort((a, b) => type === 'lectures' ? (a.lec || 999) - (b.lec || 999) : (isOfficial(b) - isOfficial(a)) || (b.helpful ? 1 : 0) - (a.helpful ? 1 : 0) || (b.year || 0) - (a.year || 0))
   const counts = all.reduce((m, u) => ((m[u.type] = (m[u.type] || 0) + 1), m), {})
   const examRules = s.examRules?.[id]
   const pre = before(id), nxt = after(id)
@@ -112,7 +112,7 @@ export default function Course({ id, type: type0, nav, back }) {
           <button key={f.id} className="row" onClick={() => open(f)}>
             <span className="ic"><I n={f.kind === 'link' ? 'play' : FILE_TYPES.find((t) => t.id === f.type)?.icon} /></span>
             <div style={{ minWidth: 0 }}>
-              <div className="t">{f.title}</div>
+              <div className="t">{f.lec ? `المحاضرة ${f.lec}: ` : ''}{f.title}</div>
               <div className="m" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 8px' }}>
                 {isOfficial(f) ? <span className="pill ok"><I n="seal" size={13} />معتمد من القسم</span> : <span className="pill off">غير رسمي</span>}
                 <span>{[f.year, f.round && (f.round === 1 ? 'دور أول' : 'دور ثاني'), f.exam, f.author && `بواسطة ${f.author}`, fmtSize(f.size)].filter(Boolean).join(' · ')}</span>

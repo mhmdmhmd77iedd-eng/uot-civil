@@ -171,7 +171,7 @@ export function startAuth() {
 export async function fetchFiles() {
   const { data, error } = await sb.from('files').select('*').order('created_at', { ascending: false }).limit(2000)
   if (error || !data) return
-  setState({ srvFiles: data.map((f) => ({ id: 'srv' + f.id, sid: f.id, course: f.course_id, type: f.type, official: f.official, title: f.title, year: f.year, round: f.round, exam: f.exam, author: f.author, size: f.size, hash: f.hash, kind: 'link', url: f.url, stored: !!f.storage_path, at: f.created_at?.slice(0, 10) })) })
+  setState({ srvFiles: data.map((f) => ({ id: 'srv' + f.id, sid: f.id, course: f.course_id, type: f.type, lec: f.lec, official: f.official, title: f.title, year: f.year, round: f.round, exam: f.exam, author: f.author, size: f.size, hash: f.hash, kind: 'link', url: f.url, stored: !!f.storage_path, at: f.created_at?.slice(0, 10) })) })
 }
 
 export async function uploadFile(rec, file) {
@@ -183,7 +183,7 @@ export async function uploadFile(rec, file) {
     if (up.error && !/exists/i.test(up.error.message)) return up.error
     url = sb.storage.from('files').getPublicUrl(storage_path).data.publicUrl
   }
-  const { error } = await sb.from('files').insert({ course_id: rec.course, type: rec.type, official: rec.official, title: rec.title, year: rec.year, round: rec.round, exam: rec.exam, author: rec.author, url, storage_path, hash: rec.hash || null, size: rec.size || null })
+  const { error } = await sb.from('files').insert({ course_id: rec.course, type: rec.type, lec: rec.lec || null, official: rec.official, title: rec.title, year: rec.year, round: rec.round, exam: rec.exam, author: rec.author, url, storage_path, hash: rec.hash || null, size: rec.size || null })
   if (!error) await fetchFiles()
   return error
 }

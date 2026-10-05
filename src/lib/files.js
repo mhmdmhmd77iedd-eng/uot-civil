@@ -34,4 +34,4 @@ export function fmtSize(n) {
 }
 
 // تصنيف الملف: «معتمد من القسم» أو «غير رسمي». الملفات القديمة: الملازم معتمدة والباقي غير رسمي
-export const isOfficial = (f) => (f.official ?? f.type === 'notes') ? 1 : 0
+export const isOfficial = (f) => (f.official ?? (f.type === 'notes' || f.type === 'lectures')) ? 1 : 0

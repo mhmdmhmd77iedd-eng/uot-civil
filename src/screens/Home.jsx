@@ -6,6 +6,7 @@ import { label, greeting, currentSemester } from '../lib/profile'
 import { tap } from '../components/ui'
 import { I, HUES, Bridge } from '../components/icons'
 import { InstallCard } from '../components/Install'
+import { QuoteOfDay } from './Quotes'
 import { nextClass, upcomingTasks, taskType, dueText, fmtTime, courseName, DAYS, weekSummary, daysLeft, dayIdx } from '../lib/schedule'
 
 function useNow() {
@@ -50,8 +51,12 @@ export default function Home({ nav }) {
     { i: 'route', h: HUES.indigo, t: 'خريطة موادي', go: 'map' },
     { i: 'ask', h: HUES.clay, t: 'الطلبات', go: 'requests' },
     { i: 'calendar', h: HUES.sage, t: 'الامتحانات', go: 'exams' },
-    { i: 'cap', h: HUES.amber, t: 'دليل بولونيا', go: 'bologna' },
-    { i: 'hardhat', h: HUES.bronze, t: 'المطوّر', go: 'developer' },
+    { i: 'bag', h: HUES.amber, t: 'المتجر', go: 'store' },
+    { i: 'quote', h: HUES.plum, t: 'اقتباسات', go: 'quotes' },
+    { i: 'megaphone', h: HUES.rose, t: 'الإعلانات', go: 'news' },
+    { i: 'sheet', h: HUES.sage, t: 'خطة الوحدات', go: 'map', p: { tab: 'plan' } },
+    { i: 'cap', h: HUES.bronze, t: 'دليل بولونيا', go: 'bologna' },
+    { i: 'hardhat', h: HUES.clay, t: 'المطوّر', go: 'developer' },
   ]
 
   return (
@@ -133,12 +138,14 @@ export default function Home({ nav }) {
         </div>
       )}
 
+      <QuoteOfDay nav={nav} />
+
       <button className="btn ac full" style={{ margin: '16px 0 4px' }} onClick={() => { tap(); nav('library') }}><I n="books" size={20} />افتح موادي</button>
 
       <div className="sec">اختصارات</div>
       <div className="tiles stagger">
         {tiles.map((x) => (
-          <button key={x.t} className="tile" style={{ '--h': x.h }} onClick={() => { tap(); nav(x.go) }}><span className="e"><I n={x.i} size={23} /></span>{x.t}</button>
+          <button key={x.t} className="tile" style={{ '--h': x.h }} onClick={() => { tap(); nav(x.go, x.p) }}><span className="e"><I n={x.i} size={23} /></span>{x.t}</button>
         ))}
       </div>
 

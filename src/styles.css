@@ -305,3 +305,25 @@ details.faq p { margin: 0 0 15px; color: var(--mu); font-size: 14px; }
 .plan-total { position: sticky; top: 8px; z-index: 5; }
 .ring { --p: 0; --c: var(--ac); width: 64px; height: 64px; border-radius: 50%; background: conic-gradient(var(--c) calc(var(--p) * 1%), var(--sf2) 0); display: grid; place-items: center; flex: none; transition: --p .6s; }
 .ring span { width: 50px; height: 50px; border-radius: 50%; background: var(--sf); display: grid; place-items: center; font-family: var(--hd); font-weight: 600; font-size: 15px; }
+
+/* المتجر */
+.shop { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 600px) { .shop { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.prod { --h: var(--ac); background: var(--sf); border-radius: 20px; box-shadow: var(--sh), inset 0 0 0 1px var(--ln2); padding: 8px 8px 10px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.prod .ph { position: relative; aspect-ratio: 1; max-width: 100%; border: none; border-radius: 14px; cursor: pointer; display: grid; place-items: center; overflow: hidden; color: var(--h); background: linear-gradient(150deg, color-mix(in srgb, var(--h) 18%, var(--sf)), color-mix(in srgb, var(--h) 6%, var(--sf))); }
+.prod .ph img { width: 100%; height: 100%; object-fit: cover; }
+.prod .oos { position: absolute; top: 8px; right: 8px; }
+.prod .nm { font-weight: 600; font-size: 13.5px; line-height: 1.4; min-height: 2.8em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; padding: 0 2px; }
+.prod .pr { font-family: var(--hd); font-weight: 600; color: var(--ac); font-size: 15px; padding: 0 2px; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+.prod .pr s { color: var(--mu); font-size: 12px; font-weight: 400; }
+.prod .btn { margin-top: auto; }
+.prod .stepper button { width: 34px; height: 34px; }
+.badge { position: absolute; top: -4px; left: -4px; min-width: 20px; height: 20px; border-radius: 10px; background: var(--bad); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; padding: 0 5px; }
+.cartbar { position: sticky; bottom: calc(92px + env(safe-area-inset-bottom)); margin-top: 16px; z-index: 6; }
+
+/* الاقتباسات */
+.qcard { position: relative; overflow: hidden; border-radius: 24px; padding: 18px 18px 14px; background: linear-gradient(140deg, color-mix(in srgb, var(--gold) 20%, var(--sf)), var(--sf) 70%); box-shadow: var(--sh), inset 0 0 0 1px color-mix(in srgb, var(--gold) 28%, transparent); }
+.qcard .qi { position: absolute; top: 10px; left: 12px; color: var(--gold); opacity: .5; }
+.qcard .qt { font-family: var(--hd); font-size: 17px; line-height: 1.75; font-weight: 500; margin: 6px 0 8px; text-wrap: pretty; }
+.qcard .qa { font-size: 12.5px; color: var(--mu); display: flex; align-items: center; gap: 8px; }
+.qcard .qa b { color: var(--tx); font-weight: 600; }

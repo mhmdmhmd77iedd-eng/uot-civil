@@ -24,6 +24,9 @@ const initial = {
   helpful: {}, // fileId -> true (تقييم «مفيد»)
   installHidden: false,
   ttKey: null, // جدول الشعبة المستورد
+  products: [], // منتجات المتجر من الخادم
+  cart: {}, // productId -> الكمية
+  favQuotes: {}, // نص الاقتباس -> true
   srvFiles: [], // ملفات المكتبة المشتركة من الخادم
   srvAnns: [], // إعلانات الخادم (عامة + الشعبة)
   seenAnns: {}, // annId -> true (زر «شفته»)

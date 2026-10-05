@@ -13,7 +13,7 @@ export default function Upload({ course: c0, type: t0, back, nav }) {
   const acct = useAcct()
   const online = acct.user && canUpload(acct)
   const toast = useToast()
-  const [f, setF] = useState({ official: (t0 || 'notes') === 'notes', course: c0 || '', type: t0 || 'notes', title: '', year: '', round: '', exam: '', author: '', url: '' })
+  const [f, setF] = useState({ lec: '', official: ['notes', 'lectures'].includes(t0 || 'notes'), course: c0 || '', type: t0 || 'notes', title: '', year: '', round: '', exam: '', author: '', url: '' })
   const [file, setFile] = useState(null)
   const [busy, setBusy] = useState(false)
   const [dup, setDup] = useState(null)
@@ -40,7 +40,7 @@ export default function Upload({ course: c0, type: t0, back, nav }) {
     setBusy(true)
     try {
       const id = 'f' + Date.now().toString(36)
-      const rec = { id, official: f.official, course: f.course, type: f.type, title: f.title.trim(), year: f.year ? Number(f.year) : null, round: f.round ? Number(f.round) : null, exam: f.exam || null, author: f.author.trim() || null, at: new Date().toISOString().slice(0, 10) }
+      const rec = { id, lec: f.lec ? Number(f.lec) : null, official: f.official, course: f.course, type: f.type, title: f.title.trim(), year: f.year ? Number(f.year) : null, round: f.round ? Number(f.round) : null, exam: f.exam || null, author: f.author.trim() || null, at: new Date().toISOString().slice(0, 10) }
       if (online) {
         const hash = isVideo ? null : (file._hash || (await fileHash(file)))
         const e = await uploadFile({ ...rec, url: isVideo ? f.url.trim() : null, hash, size: file?.size }, isVideo ? null : file)
@@ -77,7 +77,7 @@ export default function Upload({ course: c0, type: t0, back, nav }) {
       </label>
 
       <div className="field"><span>النوع *</span>
-        <div className="chips">{FILE_TYPES.map((t) => <button key={t.id} className={`chip ${f.type === t.id ? 'on' : ''}`} onClick={() => setF({ ...f, type: t.id, official: t.id === 'notes' })}><I n={t.icon} size={16} />{t.name}</button>)}</div>
+        <div className="chips">{FILE_TYPES.map((t) => <button key={t.id} className={`chip ${f.type === t.id ? 'on' : ''}`} onClick={() => setF({ ...f, type: t.id, official: t.id === 'notes' || t.id === 'lectures' })}><I n={t.icon} size={16} />{t.name}</button>)}</div>
       </div>
 
       <div className="field"><span>التصنيف *</span>
@@ -99,6 +99,11 @@ export default function Upload({ course: c0, type: t0, back, nav }) {
         </label>
       )}
 
+      {f.type === 'lectures' && (
+        <label className="field"><span>رقم المحاضرة</span>
+          <input className="input" inputMode="numeric" value={f.lec} onChange={(e) => setF({ ...f, lec: e.target.value.replace(/[^\d]/g, '').slice(0, 2) })} placeholder="مثلاً: 3" />
+        </label>
+      )}
       <label className="field"><span>العنوان *</span>
         <input className="input" value={f.title} onChange={set('title')} placeholder="مثلاً: أسئلة النهائي مع الحل" />
       </label>

@@ -148,6 +148,7 @@ export function blockedBy(id, seen = new Set()) {
 }
 
 export const FILE_TYPES = [
+  { id: 'lectures', name: 'المحاضرات', icon: 'lecture' },
   { id: 'notes', name: 'ملازم', icon: 'book' },
   { id: 'past', name: 'أسئلة سابقة', icon: 'paper' },
   { id: 'summary', name: 'ملخصات', icon: 'spark' },

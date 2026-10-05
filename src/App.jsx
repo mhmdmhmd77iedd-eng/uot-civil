@@ -11,6 +11,8 @@ import Calc from './screens/Calc'
 import Schedule from './screens/Schedule'
 import { checkReminders } from './lib/schedule'
 import RepPanel from './screens/RepPanel'
+import Store from './screens/Store'
+import Quotes from './screens/Quotes'
 import { startAuth } from './lib/sb'
 import Requests from './screens/Requests'
 import Settings from './screens/Settings'
@@ -82,7 +84,7 @@ export default function App() {
 
   const props = { ...cur.p, nav, back }
   const screens = {
-    home: Home, library: Library, course: Course, upload: Upload, map: MapScreen, calc: Calc, schedule: Schedule, rep: RepPanel,
+    home: Home, library: Library, course: Course, upload: Upload, map: MapScreen, calc: Calc, schedule: Schedule, rep: RepPanel, store: Store, quotes: Quotes,
     requests: Requests, settings: Settings, developer: Developer, news: News, bologna: Bologna, exams: Exams,
     profile: () => <Onboarding initial={profile} onDone={back} />,
   }
