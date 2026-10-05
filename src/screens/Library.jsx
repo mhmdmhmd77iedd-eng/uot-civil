@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../lib/store'
 import { COURSES, coursesFor, STAGES } from '../data/catalog'
-import { Bar, tap } from '../components/ui'
+import { courseHue, initial } from './Home'
+import { Bar, Empty, tap } from '../components/ui'
 
 const norm = (t) => t.toLowerCase().replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي')
 
@@ -43,8 +44,8 @@ export default function Library({ nav }) {
             <div className="sec">{STAGES.find((s) => s.id === st)?.name} · الفصل {sem === 1 ? 'الأول' : 'الثاني'}</div>
             <div className="stack stagger">
               {cs.map((c) => (
-                <button key={c.id} className="row" onClick={() => { tap(); nav('course', { id: c.id }) }}>
-                  <span className="ic">{c.name.replace(/^ال/, '')[0]}</span>
+                <button key={c.id} className="row" style={{ '--h': courseHue(c.id) }} onClick={() => { tap(); nav('course', { id: c.id }) }}>
+                  <span className="ic">{initial(c.name)}</span>
                   <div style={{ minWidth: 0 }}><div className="t">{c.name}</div><div className="m">{c.en} · {c.code.includes('-') ? 'مادة فرع' : c.code}</div></div>
                   <span className="end">{count[c.id] ? `${count[c.id]} ملف` : ''}</span>
                 </button>
@@ -53,7 +54,7 @@ export default function Library({ nav }) {
           </div>
         )
       })}
-      {!list.length && <div className="empty"><div className="e">🔍</div>ما لگينا مادة بهذا الاسم</div>}
+      {!list.length && <Empty e="search" t="ما لگينا مادة بهذا الاسم" />}
     </div>
   )
 }

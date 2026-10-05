@@ -4,6 +4,7 @@ import { coursesFor } from '../data/catalog'
 import { calc, STATUS_TEXT, RULES } from '../lib/grade'
 import { exportGrades } from '../lib/excel'
 import { label } from '../lib/profile'
+import { I, HUES } from '../components/icons'
 import { Bar, PrintFrame, tap, useToast } from '../components/ui'
 
 function Slider({ name, value, max, onChange }) {
@@ -29,7 +30,7 @@ export default function Calc({ back }) {
     tap()
     const rows = courses.filter((c) => grades[c.id]).map((c) => ({ name: c.name, saee: grades[c.id].saee, mid: grades[c.id].mid }))
     if (!rows.length) return toast('اكتب درجات مادة وحدة على الأقل')
-    try { await exportGrades(rows, label(profile)); toast('انحفظ ملف الإكسل ✓') } catch { toast('ما قدرنا ننشئ الملف') }
+    try { await exportGrades(rows, label(profile)); toast('انحفظ ملف الإكسل') } catch { toast('ما قدرنا ننشئ الملف') }
   }
 
   return (
@@ -78,8 +79,8 @@ export default function Calc({ back }) {
         })}
       </div>
       <div className="grid2 no-print" style={{ marginTop: 14 }}>
-        <button className="btn soft" onClick={xls}>📊 تصدير إكسل</button>
-        <button className="btn soft" onClick={() => { tap(); print() }}>🖨️ طباعة / PDF</button>
+        <button className="btn soft" onClick={xls}><I n="sheet" size={19} />تصدير إكسل</button>
+        <button className="btn soft" onClick={() => { tap(); print() }}><I n="print" size={19} />طباعة / PDF</button>
       </div>
       <p className="small muted center">درجاتك تنحفظ على جهازك تلقائياً، وما يشوفها أحد غيرك.</p>
     </div>

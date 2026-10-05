@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../lib/store'
 import { PREREQS, courseById, before, after, blockedBy, coursesFor } from '../data/catalog'
+import { I, HUES } from '../components/icons'
 import { Bar, PrintFrame, tap } from '../components/ui'
 
 // السلاسل الرئيسية: نبدأ من كل مادة ما قبلها شي
@@ -23,7 +24,7 @@ export default function MapScreen({ focus, back, nav }) {
     <div className="screen">
       <PrintFrame title="خريطة المواد والمتطلبات" />
       <Bar title="خريطة موادي" sub="اضغط أي مادة حتى تشوف شنو قبلها وشنو تفتح بعدها" onBack={back}
-        end={<button className="iconbtn no-print" onClick={() => print()} aria-label="طباعة">🖨️</button>} />
+        end={<button className="iconbtn no-print" onClick={() => print()} aria-label="طباعة"><I n="print" size={20} /></button>} />
 
       {sel && (
         <div className="card" style={{ marginBottom: 14, animation: 'up .35s var(--ease)' }}>
@@ -36,7 +37,7 @@ export default function MapScreen({ focus, back, nav }) {
           </div>
           {blocked.length > 0 && (
             <div className="small tone-bad" style={{ marginTop: 6 }}>
-              ⚠️ إذا ما عبرتها تتأخر عليك: {blocked.map((x) => courseById[x].name).join('، ')}
+              إذا ما عبرتها تتأخر عليك: {blocked.map((x) => courseById[x].name).join('، ')}
             </div>
           )}
         </div>

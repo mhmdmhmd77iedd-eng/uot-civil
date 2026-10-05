@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useStore, setState } from '../lib/store'
 import { DEFAULT_ANNOUNCEMENTS, DEFAULT_EXAMS, BOLOGNA_FAQ, BOLOGNA_NOTE } from '../data/content'
 import { COURSES, courseById, STAGES } from '../data/catalog'
+import { I, HUES } from '../components/icons'
 import { Bar, Sheet, Empty, tap, useToast } from '../components/ui'
 
 export function News({ back }) {
@@ -14,26 +15,26 @@ export function News({ back }) {
   function post() {
     const a = { id: 'a' + Date.now().toString(36), ...f, title: f.title.trim(), body: f.body.trim(), at: new Date().toISOString().slice(0, 10) }
     setState((st) => ({ announcements: [a, ...(st.announcements ?? DEFAULT_ANNOUNCEMENTS)] }))
-    setOpen(false); setF({ title: '', body: '', urgent: false, stage: s.profile.stage }); toast('انشر الإعلان ✓')
+    setOpen(false); setF({ title: '', body: '', urgent: false, stage: s.profile.stage }); toast('انشر الإعلان')
   }
   return (
     <div className="screen">
       <Bar title="الإعلانات" sub="إعلانات القسم ومرحلتك" onBack={back} />
-      {s.admin && <button className="btn ac full" style={{ marginBottom: 14 }} onClick={() => setOpen(true)}>＋ إعلان جديد</button>}
+      {s.admin && <button className="btn ac full" style={{ marginBottom: 14 }} onClick={() => setOpen(true)}><I n="plus" size={19} />إعلان جديد</button>}
       <div className="stack stagger">
         {list.map((a) => (
           <div key={a.id} className="card">
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
-              {a.urgent && <span className="pill urgent">🔔 عاجل</span>}
+              {a.urgent && <span className="pill urgent"><I n="bell" size={13} />عاجل</span>}
               <span className="small muted">{a.at}</span>
             </div>
             <b style={{ fontSize: 15.5 }}>{a.title}</b>
             <p style={{ margin: '6px 0 10px', whiteSpace: 'pre-wrap', fontSize: 14 }}>{a.body}</p>
-            <button className={`btn sm ${s.likes[a.id] ? 'ac' : 'ghost'}`} onClick={() => like(a)}>{s.likes[a.id] ? '❤️ أعجبني' : '🤍 أعجبني'}</button>
+            <button className={`btn sm ${s.likes[a.id] ? 'ac' : 'ghost'}`} onClick={() => like(a)}><I n="heart" size={16} style={s.likes[a.id] ? { fill: 'currentColor' } : null} />أعجبني</button>
           </div>
         ))}
       </div>
-      {!list.length && <Empty e="📣" t="ما أكو إعلانات حالياً" />}
+      {!list.length && <Empty e="megaphone" t="ما أكو إعلانات حالياً" />}
       <Sheet open={open} onClose={() => setOpen(false)} title="إعلان جديد">
         <label className="field"><span>العنوان</span><input className="input" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></label>
         <label className="field"><span>النص</span><textarea className="input" value={f.body} onChange={(e) => setF({ ...f, body: e.target.value })} /></label>
@@ -72,19 +73,19 @@ export function Exams({ back, nav }) {
   function add() {
     const e = { id: 'e' + Date.now().toString(36), ...f, stage: courseById[f.course].stage }
     setState((st) => ({ exams: [...(st.exams ?? DEFAULT_EXAMS), e] }))
-    setOpen(false); setF({ course: '', date: '', kind: 'نهائي' }); toast('انضاف للجدول ✓')
+    setOpen(false); setF({ course: '', date: '', kind: 'نهائي' }); toast('انضاف للجدول')
   }
   const del = (e) => setState((st) => ({ exams: (st.exams ?? DEFAULT_EXAMS).filter((x) => x.id !== e.id) }))
   return (
     <div className="screen">
       <Bar title="جدول الامتحانات" sub="مرحلتك" onBack={back} />
-      {s.admin && <button className="btn ac full" style={{ marginBottom: 14 }} onClick={() => setOpen(true)}>＋ إضافة امتحان</button>}
+      {s.admin && <button className="btn ac full" style={{ marginBottom: 14 }} onClick={() => setOpen(true)}><I n="plus" size={19} />إضافة امتحان</button>}
       <div className="stack stagger">
         {all.map((e) => {
           const d = Math.ceil((new Date(e.date) - now) / 864e5)
           const past = d < 0
           return (
-            <div key={e.id} className="row" style={{ opacity: past ? .55 : 1 }} onClick={() => nav('course', { id: e.course })}>
+            <div key={e.id} className="row" style={{ opacity: past ? .55 : 1, '--h': HUES.sage }} onClick={() => nav('course', { id: e.course })}>
               <span className="ic" style={{ flexDirection: 'column', lineHeight: 1.1, fontSize: 13 }}><b style={{ fontSize: 16 }}>{new Date(e.date).getDate()}</b>{new Date(e.date).toLocaleDateString('ar-IQ', { month: 'short' })}</span>
               <div><div className="t">{courseById[e.course]?.name}</div><div className="m">{e.kind} · {new Date(e.date).toLocaleDateString('ar-IQ', { weekday: 'long' })}</div></div>
               <span className="end">{past ? 'انتهى' : d === 0 ? 'اليوم' : `بعد ${d} يوم`}</span>
@@ -93,7 +94,7 @@ export function Exams({ back, nav }) {
           )
         })}
       </div>
-      {!all.length && <Empty e="📅" t="ما انشر جدول الامتحانات بعد" />}
+      {!all.length && <Empty e="calendar" t="ما انشر جدول الامتحانات بعد" />}
       <Sheet open={open} onClose={() => setOpen(false)} title="إضافة امتحان">
         <label className="field"><span>المادة</span>
           <select className="input" value={f.course} onChange={(e) => setF({ ...f, course: e.target.value })}>

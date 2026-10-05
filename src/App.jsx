@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useStore } from './lib/store'
-import { ToastHost, Watermark, Footer, Icon, transition, tap } from './components/ui'
+import { ToastHost, Watermark, Footer, transition, tap } from './components/ui'
 import Onboarding from './screens/Onboarding'
 import Home from './screens/Home'
 import Library from './screens/Library'
@@ -11,14 +11,15 @@ import Calc from './screens/Calc'
 import Requests from './screens/Requests'
 import Settings from './screens/Settings'
 import Developer from './screens/Developer'
+import { I } from './components/icons'
 import { News, Bologna, Exams } from './screens/Info'
 
 const TABS = [
-  { id: 'home', n: 'الرئيسية', i: Icon.home },
-  { id: 'library', n: 'المكتبة', i: Icon.lib },
-  { id: 'calc', n: 'السعي', i: Icon.tools },
-  { id: 'news', n: 'الإعلانات', i: Icon.bell },
-  { id: 'settings', n: 'حسابي', i: Icon.me },
+  { id: 'home', n: 'الرئيسية', i: 'home' },
+  { id: 'library', n: 'المكتبة', i: 'books' },
+  { id: 'calc', n: 'السعي', i: 'calc' },
+  { id: 'news', n: 'الإعلانات', i: 'bell' },
+  { id: 'settings', n: 'حسابي', i: 'user' },
 ]
 
 function useTheme(theme) {
@@ -82,7 +83,7 @@ export default function App() {
       <nav className="nav no-print" aria-label="التنقل">
         {TABS.map((t) => (
           <button key={t.id} className={tabOf === t.id ? 'on' : ''} onClick={() => { tap(); nav(t.id) }} aria-current={tabOf === t.id}>
-            {t.i}<span>{t.n}</span>
+            <I n={t.i} size={23} /><span>{t.n}</span>
           </button>
         ))}
       </nav>

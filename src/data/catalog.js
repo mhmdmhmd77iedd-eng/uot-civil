@@ -137,10 +137,10 @@ export function blockedBy(id, seen = new Set()) {
 }
 
 export const FILE_TYPES = [
-  { id: 'notes', name: 'ملازم', icon: '📘' },
-  { id: 'past', name: 'أسئلة سابقة', icon: '📝' },
-  { id: 'summary', name: 'ملخصات', icon: '✨' },
-  { id: 'translated', name: 'مترجمة', icon: '🌐' },
-  { id: 'solutions', name: 'حلول كتب', icon: '🔑' },
-  { id: 'video', name: 'شروحات فيديو', icon: '▶️' },
+  { id: 'notes', name: 'ملازم', icon: 'book' },
+  { id: 'past', name: 'أسئلة سابقة', icon: 'paper' },
+  { id: 'summary', name: 'ملخصات', icon: 'spark' },
+  { id: 'translated', name: 'مترجمة', icon: 'lang' },
+  { id: 'solutions', name: 'حلول كتب', icon: 'key' },
+  { id: 'video', name: 'شروحات فيديو', icon: 'play' },
 ]

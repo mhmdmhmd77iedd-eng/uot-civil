@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useStore, setState } from '../lib/store'
 import { courseById, before, after, FILE_TYPES } from '../data/catalog'
 import { getBlob, fmtSize } from '../lib/files'
+import { I } from '../components/icons'
 import { Bar, Empty, Sheet, tap, useToast } from '../components/ui'
 
 export default function Course({ id, nav, back }) {
@@ -35,7 +36,7 @@ export default function Course({ id, nav, back }) {
       {(examRules || s.admin) && (
         <div className="card" style={{ marginBottom: 12, borderInlineStart: '4px solid var(--gold)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <b style={{ fontSize: 14 }}>📌 تعليمات الامتحان</b>
+            <b style={{ fontSize: 14, display: 'flex', alignItems: 'center', gap: 6 }}><I n="info" size={18} style={{ color: 'var(--mid)' }} />تعليمات الامتحان</b>
             {s.admin && <button className="btn soft sm" onClick={() => { setRules(examRules || ''); setEdit(true) }}>تعديل</button>}
           </div>
           <div className="small" style={{ whiteSpace: 'pre-wrap', marginTop: 6, color: examRules ? 'var(--tx)' : 'var(--mu)' }}>
@@ -47,7 +48,7 @@ export default function Course({ id, nav, back }) {
       <div className="tabs">
         {FILE_TYPES.map((t) => (
           <button key={t.id} className={type === t.id ? 'on' : ''} onClick={() => { tap(); setType(t.id) }}>
-            {t.icon} {t.name}{counts[t.id] ? ` (${counts[t.id]})` : ''}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><I n={t.icon} size={17} />{t.name}{counts[t.id] ? ` (${counts[t.id]})` : ''}</span>
           </button>
         ))}
       </div>
@@ -55,7 +56,7 @@ export default function Course({ id, nav, back }) {
       <div className="stack stagger" key={type}>
         {files.map((f) => (
           <button key={f.id} className="row" onClick={() => open(f)}>
-            <span className="ic">{f.kind === 'link' ? '▶️' : FILE_TYPES.find((t) => t.id === f.type)?.icon}</span>
+            <span className="ic"><I n={f.kind === 'link' ? 'play' : FILE_TYPES.find((t) => t.id === f.type)?.icon} /></span>
             <div style={{ minWidth: 0 }}>
               <div className="t">{f.title}</div>
               <div className="m">{[f.year, f.round && (f.round === 1 ? 'دور أول' : 'دور ثاني'), f.exam, f.author && `بواسطة ${f.author}`, fmtSize(f.size)].filter(Boolean).join(' · ')}</div>
@@ -70,7 +71,7 @@ export default function Course({ id, nav, back }) {
         </Empty>
       )}
 
-      {s.admin && <button className="btn ac full" style={{ marginTop: 14 }} onClick={() => nav('upload', { course: id, type })}>＋ رفع ملف لهذي المادة</button>}
+      {s.admin && <button className="btn ac full" style={{ marginTop: 14 }} onClick={() => nav('upload', { course: id, type })}><I n="upload" size={20} />رفع ملف لهذي المادة</button>}
 
       {(pre.length > 0 || nxt.length > 0) && (
         <>

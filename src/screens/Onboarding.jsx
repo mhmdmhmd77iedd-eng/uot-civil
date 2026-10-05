@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BRANCHES, STAGES, SHIFTS } from '../data/catalog'
 import { setState } from '../lib/store'
 import { APP_NAME, APP_EN, DISCLAIMER } from '../lib/brand'
+import { I, Bridge } from '../components/icons'
 import { tap, transition, Footer } from '../components/ui'
 
 export default function Onboarding({ initial, onDone }) {
@@ -21,17 +22,19 @@ export default function Onboarding({ initial, onDone }) {
   if (step === 0)
     return (
       <div className="screen" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 22, paddingTop: 30 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 18, paddingTop: 20 }}>
           <div className="brand stagger" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 16 }}>
-            <img src="icons/icon-192.png" alt="" style={{ width: 84, height: 84, borderRadius: 24 }} />
+            <img src="icons/icon-192.png" alt="" style={{ width: 76, height: 76, borderRadius: 22, boxShadow: '0 14px 30px -12px rgba(47,110,105,.6)' }} />
             <div>
-              <div className="n" style={{ fontSize: 40 }}>{APP_NAME}</div>
+              <div className="n" style={{ fontSize: 36 }}>{APP_NAME}</div>
               <div className="e">{APP_EN}</div>
             </div>
           </div>
+          <div className="welcome-art" aria-hidden="true"><Bridge draw sw={1.1} /></div>
           <div className="stagger">
-            <h1 style={{ fontSize: 23, margin: '0 0 8px', lineHeight: 1.4 }}>كل دراستك بمكان واحد، مرتبة وهادئة.</h1>
-            <p className="muted" style={{ margin: 0 }}>ملازم، أسئلة سابقة حسب السنة، ملخصات، إعلانات القسم، وحاسبة سعي حسب نظام بولونيا. بدون ما يضيع شي بين رسائل القروبات.</p>
+            <h1 className="welcome-title" style={{ marginBottom: 8 }}>كل دراستك بمكان واحد، <em>مرتبة وهادئة</em>.</h1>
+            <p className="muted" style={{ margin: '0 0 14px' }}>ملازم، أسئلة سابقة حسب السنة، ملخصات، إعلانات القسم، وحاسبة سعي حسب نظام بولونيا. بدون ما يضيع شي بين رسائل القروبات.</p>
+            <div className="feat"><span><I n="book" size={16} />ملازم</span><span><I n="paper" size={16} />أسئلة سابقة</span><span><I n="calc" size={16} />حاسبة السعي</span><span><I n="route" size={16} />خريطة المواد</span></div>
           </div>
           <div className="stack stagger">
             <button className="btn ac full" onClick={() => { tap(); go(1) }}>ابدأ الآن</button>

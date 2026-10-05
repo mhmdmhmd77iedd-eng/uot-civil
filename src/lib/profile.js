@@ -8,9 +8,9 @@ export function label(p) {
 }
 export function greeting() {
   const h = new Date().getHours()
-  if (h < 5) return 'سهرانين على الدراسة؟ 🌙'
-  if (h < 12) return 'صباح الخير ☀️'
-  if (h < 17) return 'نهارك سعيد 🌤️'
-  return 'مساء الخير 🌙'
+  if (h < 5) return { t: 'سهرانين على الدراسة؟', i: 'moon' }
+  if (h < 12) return { t: 'صباح الخير', i: 'sun' }
+  if (h < 17) return { t: 'نهارك سعيد', i: 'sun' }
+  return { t: 'مساء الخير', i: 'moon' }
 }
 export const currentSemester = () => { const m = new Date().getMonth() + 1; return m >= 9 || m <= 2 ? 1 : 2 }

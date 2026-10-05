@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useStore, setState } from '../lib/store'
 import { COURSES, courseById, FILE_TYPES } from '../data/catalog'
 import { exportRequests } from '../lib/excel'
+import { I, HUES } from '../components/icons'
 import { Bar, Sheet, Empty, tap, useToast } from '../components/ui'
 
 export default function Requests({ course, type, back, nav }) {
@@ -20,7 +21,7 @@ export default function Requests({ course, type, back, nav }) {
       toast('نفس الطلب موجود، انضاف صوتك له')
     } else {
       setState((s) => ({ requests: [{ id: 'r' + Date.now().toString(36), ...f, note: f.note.trim(), votes: 1, mine: true, done: false, at: new Date().toISOString().slice(0, 10) }, ...s.requests] }))
-      toast('انرسل طلبك ✓')
+      toast('انرسل طلبك')
     }
     setOpen(false)
     setF({ course: '', type: 'past', note: '' })
@@ -31,8 +32,8 @@ export default function Requests({ course, type, back, nav }) {
   return (
     <div className="screen">
       <Bar title="الطلبات" sub="ناقصك ملف؟ اطلبه، والمشرفين يشوفون الأكثر طلباً أولاً" onBack={back}
-        end={admin && requests.length > 0 ? <button className="iconbtn" aria-label="تصدير إكسل" onClick={() => exportRequests(requests.map((r) => ({ ...r, course: courseById[r.course]?.name, type: FILE_TYPES.find((t) => t.id === r.type)?.name }))).then(() => toast('انحفظ الإكسل ✓'))}>📊</button> : null} />
-      <button className="btn ac full" onClick={() => { tap(); setOpen(true) }}>＋ طلب ملف</button>
+        end={admin && requests.length > 0 ? <button className="iconbtn" aria-label="تصدير إكسل" onClick={() => exportRequests(requests.map((r) => ({ ...r, course: courseById[r.course]?.name, type: FILE_TYPES.find((t) => t.id === r.type)?.name }))).then(() => toast('انحفظ الإكسل'))}><I n="sheet" size={20} /></button> : null} />
+      <button className="btn ac full" onClick={() => { tap(); setOpen(true) }}><I n="plus" size={19} />طلب ملف</button>
       <div className="tabs" style={{ marginTop: 14 }}>
         <button className={tab === 'open' ? 'on' : ''} onClick={() => setTab('open')}>بانتظار التوفير</button>
         <button className={tab === 'done' ? 'on' : ''} onClick={() => setTab('done')}>تم التوفير</button>
@@ -47,11 +48,11 @@ export default function Requests({ course, type, back, nav }) {
               <div className="t">{FILE_TYPES.find((t) => t.id === r.type)?.name} · {courseById[r.course]?.name}</div>
               <div className="m">{r.note || 'بدون تفاصيل'} · {r.at}</div>
             </div>
-            {admin && <button className="btn soft sm" onClick={() => done(r)}>{r.done ? 'إرجاع' : 'تم ✓'}</button>}
+            {admin && <button className="btn soft sm" onClick={() => done(r)}>{r.done ? 'إرجاع' : <><I n="check" size={15} />تم</>}</button>}
           </div>
         ))}
       </div>
-      {!list.length && <Empty e={tab === 'open' ? '🙋' : '✅'} t={tab === 'open' ? 'ما أكو طلبات حالياً' : 'ما انوفر شي بعد'} />}
+      {!list.length && <Empty e={tab === 'open' ? 'ask' : 'done'} t={tab === 'open' ? 'ما أكو طلبات حالياً' : 'ما انوفر شي بعد'} />}
 
       <Sheet open={open} onClose={() => setOpen(false)} title="طلب ملف">
         <label className="field"><span>المادة</span>
@@ -62,7 +63,7 @@ export default function Requests({ course, type, back, nav }) {
           </select>
         </label>
         <div className="field"><span>النوع</span>
-          <div className="chips">{FILE_TYPES.map((t) => <button key={t.id} className={`chip ${f.type === t.id ? 'on' : ''}`} onClick={() => setF({ ...f, type: t.id })}>{t.icon} {t.name}</button>)}</div>
+          <div className="chips">{FILE_TYPES.map((t) => <button key={t.id} className={`chip ${f.type === t.id ? 'on' : ''}`} onClick={() => setF({ ...f, type: t.id })}><I n={t.icon} size={16} />{t.name}</button>)}</div>
         </div>
         <label className="field"><span>تفاصيل (اختياري)</span>
           <input className="input" value={f.note} maxLength={120} onChange={(e) => setF({ ...f, note: e.target.value })} placeholder="مثلاً: أسئلة 2023 دور ثاني" />

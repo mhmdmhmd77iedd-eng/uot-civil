@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useStore, setState } from '../lib/store'
 import { COURSES, courseById, FILE_TYPES } from '../data/catalog'
 import { putBlob, fileHash, fmtSize } from '../lib/files'
+import { I, HUES } from '../components/icons'
 import { Bar, tap, useToast } from '../components/ui'
 
 const YEARS = Array.from({ length: 12 }, (_, i) => new Date().getFullYear() - i)
@@ -40,7 +41,7 @@ export default function Upload({ course: c0, type: t0, back, nav }) {
       if (isVideo) Object.assign(rec, { kind: 'link', url: f.url.trim() })
       else { await putBlob(id, file); Object.assign(rec, { kind: 'file', hash: file._hash || (await fileHash(file)), size: file.size, name: file.name }) }
       setState((s) => ({ uploads: [rec, ...s.uploads] }))
-      toast('انرفع الملف ✓')
+      toast('انرفع الملف')
       nav('course', { id: f.course }, true)
     } catch {
       toast('صار خطأ بالحفظ، جرّب مرة ثانية')
@@ -50,7 +51,7 @@ export default function Upload({ course: c0, type: t0, back, nav }) {
   return (
     <div className="screen">
       <Bar title="رفع ملف" sub="كل الحقول المعلّمة مطلوبة حتى يبقى المحتوى مرتب" onBack={back} />
-      <div className="demo">💾<span>بهذي النسخة التجريبية الملف ينحفظ على جهازك فقط. بعد ربط الخادم يوصل لكل الطلاب.</span></div>
+      <div className="demo"><I n="info" size={18} style={{ color: 'var(--mid)', marginTop: 1 }} /><span>بهذي النسخة التجريبية الملف ينحفظ على جهازك فقط. بعد ربط الخادم يوصل لكل الطلاب.</span></div>
 
       <label className="field"><span>المادة *</span>
         <select className="input" value={f.course} onChange={set('course')}>
@@ -64,7 +65,7 @@ export default function Upload({ course: c0, type: t0, back, nav }) {
       </label>
 
       <div className="field"><span>النوع *</span>
-        <div className="chips">{FILE_TYPES.map((t) => <button key={t.id} className={`chip ${f.type === t.id ? 'on' : ''}`} onClick={() => setF({ ...f, type: t.id })}>{t.icon} {t.name}</button>)}</div>
+        <div className="chips">{FILE_TYPES.map((t) => <button key={t.id} className={`chip ${f.type === t.id ? 'on' : ''}`} onClick={() => setF({ ...f, type: t.id })}><I n={t.icon} size={16} />{t.name}</button>)}</div>
       </div>
 
       {isVideo ? (
@@ -75,7 +76,7 @@ export default function Upload({ course: c0, type: t0, back, nav }) {
         <label className="field"><span>الملف *</span>
           <input className="input" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*" onChange={pick} />
           {file && <div className="small muted" style={{ marginTop: 6 }}>{file.name} · {fmtSize(file.size)}</div>}
-          {dup && <div className="small tone-bad" style={{ marginTop: 6 }}>⚠️ نفس الملف مرفوع مسبقاً باسم «{dup.title}» في {courseById[dup.course]?.name}.</div>}
+          {dup && <div className="small tone-bad" style={{ marginTop: 6 }}>نفس الملف مرفوع مسبقاً باسم «{dup.title}» في {courseById[dup.course]?.name}.</div>}
         </label>
       )}
 

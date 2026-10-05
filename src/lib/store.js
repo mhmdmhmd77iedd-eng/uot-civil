@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react'
 
 const KEY = 'almadani:v1'
 const BK = 'almadani:backups'
-export const VERSION = '1.0.0'
+export const VERSION = '1.1.0'
 
 const initial = {
   profile: null, // { branch, stage, shift, name }
