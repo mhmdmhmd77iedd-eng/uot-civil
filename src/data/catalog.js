@@ -21,7 +21,7 @@ export const SHIFTS = [
 ]
 
 // c(code, اسم عربي, English, المرحلة, الفصل, الوحدات, الفروع) ؛ الفروع فارغة = لكل الفروع
-const c = (code, name, en, stage, sem, ects, branches = null) => ({ id: code, code, name, en, stage, sem, ects, branches })
+const c = (code, name, en, stage, sem, ects, branches = null, id = code) => ({ id, code, name, en, stage, sem, ects, branches })
 
 export const COURSES = [
   // المرحلة الأولى (موحدة)
@@ -31,6 +31,7 @@ export const COURSES = [
   c('ENDR114', 'الرسم الهندسي', 'Engineering Drawing', 1, 1, 5),
   c('COMP108', 'الحاسوب 1', 'Computer 1', 1, 1, 3),
   c('WSHE106', 'الورش', 'Workshops', 1, 1, 4),
+  c('WSHE106', 'الورش (الفصل الثاني)', 'Workshops', 1, 2, 4, null, 'WSHE106B'),
   c('ENLA107', 'اللغة الإنكليزية 1', 'English Language 1', 1, 1, 2),
   c('MATH122', 'الرياضيات 1', 'Mathematics 1', 1, 2, 8),
   c('ENMD123', 'ميكانيك هندسي: داينمك', 'Eng. Mechanics - Dynamics', 1, 2, 4),
@@ -65,13 +66,14 @@ export const COURSES = [
   c('HITE322', 'هندسة الطرق والنقل', 'Highway & Transportation Eng.', 3, 2, 6),
   c('STAN323', 'التحليل الإنشائي 2', 'Structural Analysis 2', 3, 2, 4),
   c('SDRC324', 'الخرسانة المسلحة 2', 'Reinforced Concrete 2', 3, 2, 4),
-  c('ARLA304', 'اللغة العربية 2', 'Arabic Language 2', 3, 2, 2),
+  c('ARLA304', 'اللغة العربية 2', 'Arabic Language 2', 3, 1, 2),
   // المرحلة الرابعة (مشتركة)
   c('QUSU411', 'حساب الكميات', 'Quantity Survey', 4, 1, 5),
   c('PREE411', 'أخلاقيات المهنة وريادة الأعمال', 'Professional Ethics', 4, 1, 2),
   c('FOEN412', 'هندسة الأسس', 'Foundation Engineering', 4, 1, 6),
   c('STDS413', 'تصميم المنشآت الحديدية', 'Structural Design - Steel', 4, 1, 5),
-  c('SPCE404', 'مشروع التخرج', 'Senior Project', 4, 1, 12),
+  c('SPCE404', 'مشروع التخرج', 'Senior Project', 4, 1, 6),
+  c('SPCE404', 'مشروع التخرج (الفصل الثاني)', 'Senior Project', 4, 2, 6, null, 'SPCE404B'),
   c('DEFO421', 'الأسس العميقة', 'Deep Foundations', 4, 2, 6),
   c('COPM422', 'إدارة المشاريع الإنشائية', 'Construction Project Management', 4, 2, 5),
   // مواد خاصة بالفروع (اختيارية الفرع)
@@ -117,6 +119,10 @@ export const PREREQS = [
   ['FLME215', 'HYHY223'],
   ['BUCO214', 'QUSU411'],
 ]
+
+// المواد الاختيارية لكل فرع حسب مخطط 2023/2024 (CE Elective 1-5): وحداتها ثابتة، والمادة تختلف حسب الفرع
+// المرحلة.الفصل -> وحدات كل مادة اختيارية. كل فصل مجموعه 30 وحدة
+export const ELECTIVE_SLOTS = { '3-2': [4, 4], '4-1': [6], '4-2': [5, 8] }
 
 export const courseById = Object.fromEntries(COURSES.map((x) => [x.id, x]))
 

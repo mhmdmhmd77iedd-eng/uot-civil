@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStore, setState } from '../lib/store'
-import { PREREQS, COURSES, STAGES, courseById, before, after, blockedBy, coursesFor } from '../data/catalog'
+import { PREREQS, COURSES, STAGES, ELECTIVE_SLOTS, courseById, before, after, blockedBy, coursesFor } from '../data/catalog'
 import { currentSemester } from '../lib/profile'
 import { courseHue } from './Home'
 import { I, HUES } from '../components/icons'
@@ -22,12 +22,15 @@ function Plan({ profile, plan }) {
   const [sem, setSem] = useState(currentSemester())
   const [more, setMore] = useState(false)
   const ids = plan?.[sem] ?? []
-  const mine = coursesFor(profile).filter((c) => c.sem === sem)
+  // مواد الفرع تنحسب ضمن المواد الاختيارية (وحداتها من المخطط الرسمي)
+  const slots = (ELECTIVE_SLOTS[`${profile.stage}-${sem}`] || []).map((u, i) => ({ id: `EL:${profile.stage}-${sem}:${i}`, name: `مادة اختيارية من فرعك (${i + 1})`, ects: u, stage: profile.stage, sem }))
+  const mine = [...coursesFor(profile).filter((c) => c.sem === sem && !c.branches), ...slots]
+  const unit = (id) => courseById[id]?.ects ?? slots.find((x) => x.id === id)?.ects ?? 0
   // أول مرة: نختار مواد مرحلتك تلقائياً
   const chosen = new Set(plan?.[sem] ? ids : mine.map((c) => c.id))
-  const total = [...chosen].reduce((a, id) => a + (courseById[id]?.ects || 0), 0)
+  const total = [...chosen].filter((id) => !id.startsWith('EL:') || slots.some((x) => x.id === id)).reduce((a, id) => a + unit(id), 0)
   const over = total > MAX_UNITS
-  const carried = COURSES.filter((c) => c.stage < profile.stage && c.sem === sem && (!c.branches || c.branches.includes(profile.branch)))
+  const carried = COURSES.filter((c) => c.stage < profile.stage && c.sem === sem && !c.branches)
   const toggle = (id) => { tap(); const n = new Set(chosen); n.has(id) ? n.delete(id) : n.add(id); setState((s) => ({ plan: { ...s.plan, [sem]: [...n] } })) }
   const Row = (c) => {
     const on = chosen.has(c.id)
@@ -50,7 +53,7 @@ function Plan({ profile, plan }) {
         <div className="ring" style={{ '--p': Math.min(100, (total / MAX_UNITS) * 100), '--c': over ? 'var(--bad)' : 'var(--ac)' }}><span>{total}</span></div>
         <div>
           <b style={{ fontSize: 15 }}>{total} من {MAX_UNITS} وحدة</b>
-          <div className={`small ${over ? 'tone-bad' : 'muted'}`}>{over ? `تجاوزت الحد بـ ${total - MAX_UNITS} وحدة، شيل مادة حتى يقبل تسجيلك` : `تكدر تضيف ${MAX_UNITS - total} وحدة بعد (مثلاً مادة محمّلة)`}</div>
+          <div className={`small ${over ? 'tone-bad' : 'muted'}`}>{over ? `تجاوزت الحد بـ ${total - MAX_UNITS} وحدة، شيل مادة حتى يقبل تسجيلك` : total === MAX_UNITS ? 'وصلت الحد بالضبط. إذا تريد تضيف مادة محمّلة لازم تشيل مادة' : `تكدر تضيف ${MAX_UNITS - total} وحدة بعد (مثلاً مادة محمّلة)`}</div>
         </div>
       </div>
       <div className="sec">مواد مرحلتك</div>
@@ -61,7 +64,7 @@ function Plan({ profile, plan }) {
           {(more || carried.some((c) => chosen.has(c.id))) && <div className="stack">{(more ? carried : carried.filter((c) => chosen.has(c.id))).map(Row)}</div>}
         </>
       )}
-      <p className="small muted" style={{ marginTop: 12 }}>هذي خطة تساعدك تعرف مجموع وحداتك قبل التسجيل على منظومة بولونيا. التسجيل الرسمي يبقى من المنظومة.</p>
+      <p className="small muted" style={{ marginTop: 12 }}>الوحدات من مخطط المتطلبات الرسمي 2023/2024، وكل فصل مجموعه 30. هذي خطة تساعدك تعرف مجموع وحداتك قبل التسجيل على منظومة بولونيا. التسجيل الرسمي يبقى من المنظومة.</p>
     </>
   )
 }
