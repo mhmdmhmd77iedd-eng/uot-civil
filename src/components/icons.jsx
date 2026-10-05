@@ -172,6 +172,30 @@ const P = {
     f: <rect x="4" y="4" width="7" height="7" rx="2" />,
     s: <><rect x="4" y="4" width="7" height="7" rx="2" /><rect x="13" y="4" width="7" height="7" rx="2" /><rect x="4" y="13" width="7" height="7" rx="2" /><rect x="13" y="13" width="7" height="7" rx="2" /></>,
   },
+  clock: {
+    f: <circle cx="12" cy="12" r="8.5" />,
+    s: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3.2 2" /></>,
+  },
+  pin: {
+    f: <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" />,
+    s: <><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" /><circle cx="12" cy="10" r="2.4" /></>,
+  },
+  pencil: {
+    f: <path d="M4 20l1-4.2L15.6 5.2a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.2 19z" />,
+    s: <><path d="M4 20l1-4.2L15.6 5.2a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.2 19z" /><path d="M13.8 7l3.2 3.2M4 20h5" /></>,
+  },
+  bolt: {
+    f: <path d="M13 2.8 4.8 13.4h6.4L10.6 21.2l8.6-10.8h-6.4z" />,
+    s: <path d="M13 2.8 4.8 13.4h6.4L10.6 21.2l8.6-10.8h-6.4z" />,
+  },
+  flag: {
+    f: <path d="M5 4.5c4.5-2 7.5 2 14 0v9c-6.5 2-9.5-2-14 0z" />,
+    s: <><path d="M5 4.5c4.5-2 7.5 2 14 0v9c-6.5 2-9.5-2-14 0z" /><path d="M5 4v17" /></>,
+  },
+  week: {
+    f: <path d="M3.5 8a2.5 2.5 0 0 1 2.5-2.5h12A2.5 2.5 0 0 1 20.5 8v2h-17z" />,
+    s: <><rect x="3.5" y="5.5" width="17" height="15" rx="2.5" /><path d="M3.5 10h17M8 3.5v4M16 3.5v4M7.5 13.5h2M11 13.5h2M14.5 13.5h2M7.5 17h2M11 17h2" /></>,
+  },
 }
 
 export function I({ n, size = 22, className = '', style }) {

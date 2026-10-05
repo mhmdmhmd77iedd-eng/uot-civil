@@ -15,6 +15,8 @@ const initial = {
   announcements: null, // null = استخدم الافتراضية
   exams: null,
   uploads: [], // { id, course, type, year, round, title, hash, size, at, kind:'file'|'link', url }
+  classes: [], // { id, course, day(0=السبت..5=الخميس), start, end, room, prof, kind, src:'me'|'rep' }
+  tasks: [], // { id, type, course, title, due, done, src }
   seenWelcome: false,
 }
 
