@@ -83,9 +83,9 @@ export default function Home({ nav }) {
           <div className="l">{nc ? (nc.live ? 'محاضرتك هسه' : 'محاضرتك الجاية') : 'جدولي'}</div>
           {nc ? (
             <>
-              <div className="s" style={{ marginBottom: 8 }}>{courseName(nc.c.course)}</div>
+              <div className="s" style={{ marginBottom: 8 }}>{nc.c.title || courseName(nc.c.course)}</div>
               <div className="cd">
-                <div><b style={{ fontSize: 17 }}>{nc.inDays === 0 ? 'اليوم' : nc.inDays === 1 ? 'باجر' : DAYS[nc.c.day]}</b><span>اليوم</span></div>
+                <div><b style={{ fontSize: 17 }}>{nc.inDays === 0 ? 'اليوم' : nc.inDays === 1 ? 'باجر' : DAYS[nc.c.day]}</b><span>متى</span></div>
                 <div><b style={{ fontSize: 17 }}>{fmtTime(nc.c.start)}</b><span>الوقت</span></div>
                 {nc.c.room && <div><b style={{ fontSize: 17 }}>{nc.c.room}</b><span>القاعة</span></div>}
               </div>

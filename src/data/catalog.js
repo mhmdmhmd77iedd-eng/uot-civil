@@ -126,11 +126,16 @@ export const ELECTIVE_SLOTS = { '3-2': [4, 4], '4-1': [6], '4-2': [5, 8] }
 
 export const courseById = Object.fromEntries(COURSES.map((x) => [x.id, x]))
 
+// فروع تدرس مادة بفصل غير اللي بالمخطط العام (من جدول الشعبة الرسمي)
+// الموارد المائية، المرحلة الثالثة 2026-2027: الطرق بالفصل الأول، وميكانيك التربة بالثاني
+export const SEM_OVERRIDE = { wat: { HITE322: 1, SOME312: 2 } }
+
 export function coursesFor(profile) {
   if (!profile) return []
+  const ov = SEM_OVERRIDE[profile.branch] || {}
   return COURSES.filter(
     (x) => x.stage === profile.stage && (!x.branches || x.branches.includes(profile.branch)),
-  )
+  ).map((x) => (ov[x.id] ? { ...x, sem: ov[x.id] } : x))
 }
 
 export const before = (id) => PREREQS.filter(([, b]) => b === id).map(([a]) => a)

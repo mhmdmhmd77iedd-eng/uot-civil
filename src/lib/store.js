@@ -23,6 +23,7 @@ const initial = {
   plan: {}, // خطة التسجيل لكل فصل { 1: [...], 2: [...] }؛ فارغة = مواد مرحلتي تلقائياً
   helpful: {}, // fileId -> true (تقييم «مفيد»)
   installHidden: false,
+  ttKey: null, // جدول الشعبة المستورد
   seenWelcome: false,
 }
 

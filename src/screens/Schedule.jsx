@@ -3,6 +3,8 @@ import { useStore, setState } from '../lib/store'
 import { COURSES, coursesFor } from '../data/catalog'
 import { DAYS, CLASS_KINDS, TASK_TYPES, taskType, uid, ymd, toMin, fmtTime, dueText, daysLeft, dueAt, courseName, weekDates, dayIdx, askNotify, notifySupported, checkReminders } from '../lib/schedule'
 import { courseHue } from './Home'
+import { timetableFor } from '../data/timetables'
+import { currentSemester } from '../lib/profile'
 import { I } from '../components/icons'
 import { Bar, Empty, Sheet, tap, useToast } from '../components/ui'
 
@@ -111,6 +113,13 @@ export default function Schedule({ nav, tab: tab0 }) {
   const cur = now.getHours() * 60 + now.getMinutes()
   const list = s.classes.filter((c) => c.day === day).sort((a, b) => toMin(a.start) - toMin(b.start))
   const tasks = s.tasks.filter((t) => (showDone ? t.done : !t.done)).sort((a, b) => (showDone ? dueAt(b) - dueAt(a) : dueAt(a) - dueAt(b)))
+  const tt = timetableFor(s.profile, currentSemester())
+  const ttImported = tt && s.ttKey === tt.key
+  function importTT() {
+    tap()
+    setState((x) => ({ ttKey: tt.key, classes: [...x.classes.filter((c) => c.src !== 'rep'), ...tt.classes.map((c, i) => ({ ...c, id: `r${i}-${tt.key}`, src: 'rep' }))] }))
+    toast('انضاف جدول شعبتك')
+  }
   const openCount = s.tasks.filter((t) => !t.done && daysLeft(t) >= 0).length
 
   useEffect(() => { checkReminders() }, [])
@@ -143,6 +152,14 @@ export default function Schedule({ nav, tab: tab0 }) {
 
       {tab === 'classes' ? (
         <>
+          {tt && !ttImported && (
+            <div className="install" style={{ marginTop: 0, marginBottom: 14 }}>
+              <span className="ic"><I n="week" size={22} /></span>
+              <div style={{ flex: 1, minWidth: 0 }}><b style={{ fontSize: 14 }}>جدول شعبتك الرسمي نازل</b><div className="small muted">الفصل الأول {tt.year}، {tt.classes.length} محاضرة بالأسبوع. تضيفه بضغطة.</div></div>
+              <button className="btn warm sm" onClick={importTT}>أضفه</button>
+            </div>
+          )}
+          {ttImported && tt.note && <div className="small muted" style={{ margin: '-4px 4px 10px', display: 'flex', gap: 5, alignItems: 'center' }}><I n="info" size={14} />{tt.note}</div>}
           <div className="days">
             {DAYS.map((d, i) => (
               <button key={d} className={day === i ? 'on' : ''} onClick={() => { tap(); setDay(i) }}>
@@ -159,7 +176,7 @@ export default function Schedule({ nav, tab: tab0 }) {
                 <button key={c.id} className={`cls ${live ? 'now' : ''} ${past ? 'past' : ''}`} style={{ '--h': courseHue(c.course) }} onClick={() => setEdit({ kind: 'class', item: c })}>
                   <div className="tm"><b>{fmtTime(c.start).split(' ')[0]}</b>{fmtTime(c.start).split(' ')[1]}</div>
                   <div style={{ minWidth: 0, flex: 1 }}>
-                    <div className="t">{courseName(c.course)} {live && <span className="pill ok" style={{ marginInlineStart: 4 }}>هسه</span>}</div>
+                    <div className="t">{c.title || courseName(c.course)} {live && <span className="pill ok" style={{ marginInlineStart: 4 }}>هسه</span>}</div>
                     <div className="m">
                       <span><I n="clock" size={13} />{fmtTime(c.start)} - {fmtTime(c.end)}</span>
                       {c.room && <span><I n="pin" size={13} />{c.room}</span>}
