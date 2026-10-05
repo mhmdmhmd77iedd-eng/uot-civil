@@ -6,7 +6,7 @@ import { getState, setState } from './store'
 export const SB_URL = 'https://kdsesjhilvcbnofaqpml.supabase.co'
 export const SB_KEY = 'sb_publishable_19KduHdwJ2e79IT4OjiqXg_M22daw2p'
 export const APP_URL = 'https://mhmdmhmd77iedd-eng.github.io/uot-civil/'
-// الدخول يظهر للكل بعد ما عبدالله يكمل إعداد Google؛ قبلها يظهر بوضع المشرف بس للتجربة
+// الدخول يظهر للكل بعد ما عبدالله يسوي حسابه ويصير المطوّر؛ قبلها يظهر بوضع المشرف بس
 export const AUTH_LIVE = false
 
 export const sb = createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' } })
@@ -33,9 +33,32 @@ function deviceId() {
 }
 const deviceLabel = () => { const u = navigator.userAgent; return /iphone|ipad/i.test(u) ? 'آيفون' : /android/i.test(u) ? 'أندرويد' : /windows/i.test(u) ? 'ويندوز' : /mac/i.test(u) ? 'ماك' : 'جهاز' }
 
-export async function signInGoogle() {
-  const redirectTo = location.origin + location.pathname
-  return sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } })
+// الدخول بالإيميل وكلمة السر (Google Cloud ما يقبل العراق)
+const AUTH_ERR = {
+  'Invalid login credentials': 'الإيميل أو كلمة السر غلط',
+  'User already registered': 'هذا الإيميل عنده حساب، سجّل دخول بدل حساب جديد',
+  'Email not confirmed': 'الحساب يحتاج تأكيد إيميل، راجع المطوّر',
+  'Signups not allowed for this instance': 'تسجيل الحسابات الجديدة مسكّر حالياً',
+}
+const authMsg = (e) => AUTH_ERR[e?.message] || (/password/i.test(e?.message || '') ? 'كلمة السر لازم 6 أحرف أو أكثر' : /email/i.test(e?.message || '') ? 'اكتب الإيميل بشكل صحيح' : 'ما نجح، تأكد من النت وجرّب')
+export async function signInEmail(email, password) {
+  const { error } = await sb.auth.signInWithPassword({ email: email.trim(), password })
+  return error ? authMsg(error) : null
+}
+export async function signUpEmail(email, password, name) {
+  const { data, error } = await sb.auth.signUp({ email: email.trim(), password, options: { data: { name: name.trim() } } })
+  if (error) return authMsg(error)
+  if (!data.session) return 'انسوى الحساب بس يحتاج تأكيد إيميل، راجع المطوّر'
+  return null
+}
+export async function changePassword(password) {
+  const { error } = await sb.auth.updateUser({ password })
+  return error ? authMsg(error) : null
+}
+// المطوّر أو المشرف يغيّر كلمة سر طالب نساها
+export async function resetUserPassword(email, password) {
+  const { data, error } = await sb.rpc('admin_set_password', { e: email.trim(), p: password })
+  return error ? 'ما نجح، تأكد من صلاحيتك' : data === false ? 'ماكو حساب بهذا الإيميل' : null
 }
 export async function signOut() {
   try { await sb.from('devices').delete().eq('device_id', deviceId()) } catch {}
@@ -55,7 +78,7 @@ export async function refresh() {
 
   const p = getState().profile
   // نحدّث الملف الشخصي من اختيارات الطالب بالتطبيق
-  if (p) await sb.from('profiles').update({ name: p.name || user.user_metadata?.full_name || null, branch: p.branch || null, stage: p.stage, shift: p.shift }).eq('id', user.id)
+  if (p) await sb.from('profiles').update({ name: p.name || user.user_metadata?.name || user.user_metadata?.full_name || null, branch: p.branch || null, stage: p.stage, shift: p.shift }).eq('id', user.id)
   const [{ data: prof }, { data: roles }] = await Promise.all([
     sb.from('profiles').select('uni_email').eq('id', user.id).maybeSingle(),
     sb.from('user_roles').select('role, section_id, course_id').eq('user_id', user.id),

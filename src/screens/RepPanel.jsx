@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useStore } from '../lib/store'
-import { useAcct, isStaff, isOwner, pendingMembers, decide, makeRep, makeSupervisor, publishClasses, postAnnouncement, syncSection } from '../lib/sb'
+import { useAcct, isStaff, isOwner, pendingMembers, decide, makeRep, makeSupervisor, resetUserPassword, publishClasses, postAnnouncement, syncSection } from '../lib/sb'
 import { label } from '../lib/profile'
 import { I } from '../components/icons'
 import { Bar, Empty, Sheet, tap, useToast } from '../components/ui'
@@ -14,6 +14,7 @@ export default function RepPanel({ back, nav }) {
   const [ann, setAnn] = useState(false)
   const [f, setF] = useState({ title: '', body: '', urgent: false, general: false })
   const [busy, setBusy] = useState(false)
+  const [rp, setRp] = useState({ email: '', pass: '' })
   const load = () => pendingMembers().then(setList).catch(() => setList([]))
   useEffect(() => { if (a.section) load() }, [a.section?.id])
 
@@ -68,6 +69,17 @@ export default function RepPanel({ back, nav }) {
                 {isOwner(a) && <button className="btn ghost sm" disabled={busy} onClick={() => act(() => makeSupervisor(m.user_id), 'صار مشرف')}>مشرف</button>}
               </div>
             ))}
+          </div>
+        </>
+      )}
+      {isStaff(a) && (
+        <>
+          <div className="sec">طالب نسى كلمة السر</div>
+          <div className="card" style={{ display: 'grid', gap: 10 }}>
+            <div className="small muted">تأكد إنه صاحب الحساب فعلاً (مثلاً يراسلك من رقمه)، بعدين اكتب إيميله وكلمة سر جديدة ودزها إله.</div>
+            <input className="input" type="email" dir="ltr" placeholder="إيميل الطالب" value={rp.email} onChange={(e) => setRp({ ...rp, email: e.target.value })} />
+            <input className="input" dir="ltr" placeholder="كلمة السر الجديدة (6 أو أكثر)" value={rp.pass} onChange={(e) => setRp({ ...rp, pass: e.target.value })} />
+            <button className="btn soft sm" disabled={busy || !rp.email.includes('@') || rp.pass.length < 6} onClick={async () => { tap(); setBusy(true); const e = await resetUserPassword(rp.email, rp.pass); setBusy(false); toast(e || 'تغيّرت كلمة السر'); if (!e) setRp({ email: '', pass: '' }) }}>غيّر كلمة السر</button>
           </div>
         </>
       )}
