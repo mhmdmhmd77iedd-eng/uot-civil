@@ -8,6 +8,8 @@ import { calc, STATUS_TEXT } from '../lib/grade'
 import { isOfficial } from '../lib/files'
 import { TaskRow } from './Schedule'
 import { upcomingTasks } from '../lib/schedule'
+import { saveOffline, offlineBlob, offlineCount } from '../lib/sb'
+import { useEffect } from 'react'
 
 export default function Course({ id, type: type0, nav, back }) {
   const s = useStore()
@@ -19,8 +21,9 @@ export default function Course({ id, type: type0, nav, back }) {
   if (!c) return <div className="screen"><Bar title="المادة غير موجودة" onBack={back} /></div>
 
   // المعتمد من القسم يطلع أول، وبعده الأحدث
-  const files = s.uploads.filter((u) => u.course === id && u.type === type).sort((a, b) => (isOfficial(b) - isOfficial(a)) || (b.helpful ? 1 : 0) - (a.helpful ? 1 : 0) || (b.year || 0) - (a.year || 0))
-  const counts = s.uploads.filter((u) => u.course === id).reduce((m, u) => ((m[u.type] = (m[u.type] || 0) + 1), m), {})
+  const all = [...(s.srvFiles || []), ...s.uploads].filter((u) => u.course === id)
+  const files = all.filter((u) => u.type === type).sort((a, b) => (isOfficial(b) - isOfficial(a)) || (b.helpful ? 1 : 0) - (a.helpful ? 1 : 0) || (b.year || 0) - (a.year || 0))
+  const counts = all.reduce((m, u) => ((m[u.type] = (m[u.type] || 0) + 1), m), {})
   const examRules = s.examRules?.[id]
   const pre = before(id), nxt = after(id)
   const g = s.grades[id] || {}
@@ -32,10 +35,19 @@ export default function Course({ id, type: type0, nav, back }) {
   const setAbs = (n) => { tap(); setState((x) => ({ absences: { ...x.absences, [id]: Math.max(0, n) } })) }
   const lim = s.absenceLimit
   const myTasks = upcomingTasks(s.tasks).filter((t) => t.course === id)
+  const storedFiles = all.filter((f) => f.stored)
+  const [off, setOff] = useState(null)
+  const [dl, setDl] = useState(false)
+  useEffect(() => { if (storedFiles.length) offlineCount(storedFiles).then(setOff) }, [storedFiles.length])
 
   async function open(f) {
     tap()
-    if (f.kind === 'link') return window.open(f.url, '_blank', 'noopener')
+    if (f.kind === 'link') {
+      // إذا محمّل للاستخدام بدون نت نفتحه من الذاكرة
+      const b = f.stored && !navigator.onLine ? await offlineBlob(f.url) : null
+      if (b) { const u = URL.createObjectURL(b); window.open(u, '_blank', 'noopener'); return setTimeout(() => URL.revokeObjectURL(u), 60000) }
+      return window.open(f.url, '_blank', 'noopener')
+    }
     const blob = await getBlob(f.id).catch(() => null)
     if (!blob) return toast('الملف مو موجود على هذا الجهاز')
     const url = URL.createObjectURL(blob)
@@ -121,6 +133,11 @@ export default function Course({ id, type: type0, nav, back }) {
         </Empty>
       )}
 
+      {storedFiles.length > 0 && (
+        <button className="btn soft full" style={{ marginTop: 14 }} disabled={dl || off === storedFiles.length} onClick={async () => { tap(); setDl(true); const n = await saveOffline(storedFiles); setDl(false); setOff(n); toast(`انحفظت ${n} ملفات، تفتح بدون نت`) }}>
+          <I n={off === storedFiles.length ? 'done' : 'download'} size={19} />{dl ? 'جاري التحميل…' : off === storedFiles.length ? 'المادة محمّلة للاستخدام بدون نت' : `حمّل المادة للاستخدام بدون نت (${storedFiles.length} ملف)`}
+        </button>
+      )}
       {s.admin && <button className="btn ac full" style={{ marginTop: 14 }} onClick={() => nav('upload', { course: id, type })}><I n="upload" size={20} />رفع ملف لهذي المادة</button>}
 
       {(pre.length > 0 || nxt.length > 0) && (

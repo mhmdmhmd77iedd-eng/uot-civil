@@ -4,11 +4,14 @@ import { COURSES, courseById, FILE_TYPES } from '../data/catalog'
 import { putBlob, fileHash, fmtSize } from '../lib/files'
 import { I, HUES } from '../components/icons'
 import { Bar, tap, useToast } from '../components/ui'
+import { useAcct, canUpload, uploadFile } from '../lib/sb'
 
 const YEARS = Array.from({ length: 12 }, (_, i) => new Date().getFullYear() - i)
 
 export default function Upload({ course: c0, type: t0, back, nav }) {
-  const { uploads } = useStore()
+  const { uploads, srvFiles } = useStore()
+  const acct = useAcct()
+  const online = acct.user && canUpload(acct)
   const toast = useToast()
   const [f, setF] = useState({ official: (t0 || 'notes') === 'notes', course: c0 || '', type: t0 || 'notes', title: '', year: '', round: '', exam: '', author: '', url: '' })
   const [file, setFile] = useState(null)
@@ -26,7 +29,7 @@ export default function Upload({ course: c0, type: t0, back, nav }) {
     setFile(x)
     if (!f.title) setF((p) => ({ ...p, title: x.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ') }))
     const h = await fileHash(x)
-    const d = uploads.find((u) => u.hash === h)
+    const d = [...uploads, ...(srvFiles || [])].find((u) => u.hash === h)
     if (d) setDup(d)
     x._hash = h
   }
@@ -38,6 +41,13 @@ export default function Upload({ course: c0, type: t0, back, nav }) {
     try {
       const id = 'f' + Date.now().toString(36)
       const rec = { id, official: f.official, course: f.course, type: f.type, title: f.title.trim(), year: f.year ? Number(f.year) : null, round: f.round ? Number(f.round) : null, exam: f.exam || null, author: f.author.trim() || null, at: new Date().toISOString().slice(0, 10) }
+      if (online) {
+        const hash = isVideo ? null : (file._hash || (await fileHash(file)))
+        const e = await uploadFile({ ...rec, url: isVideo ? f.url.trim() : null, hash, size: file?.size }, isVideo ? null : file)
+        if (e) throw e
+        toast('انرفع الملف لكل الطلاب')
+        return nav('course', { id: f.course, type: f.type }, true)
+      }
       if (isVideo) Object.assign(rec, { kind: 'link', url: f.url.trim() })
       else { await putBlob(id, file); Object.assign(rec, { kind: 'file', hash: file._hash || (await fileHash(file)), size: file.size, name: file.name }) }
       setState((s) => ({ uploads: [rec, ...s.uploads] }))
@@ -51,7 +61,9 @@ export default function Upload({ course: c0, type: t0, back, nav }) {
   return (
     <div className="screen">
       <Bar title="رفع ملف" sub="كل الحقول المعلّمة مطلوبة حتى يبقى المحتوى مرتب" onBack={back} />
-      <div className="demo"><I n="info" size={18} style={{ color: 'var(--mid)', marginTop: 1 }} /><span>بهذي النسخة التجريبية الملف ينحفظ على جهازك فقط. بعد ربط الخادم يوصل لكل الطلاب.</span></div>
+      {online
+        ? <div className="demo" style={{ background: 'color-mix(in srgb, var(--good) 12%, var(--sf))', boxShadow: 'none' }}><I n="done" size={18} style={{ color: 'var(--good)', marginTop: 1 }} /><span>أنت مسجّل كمشرف: الملف يوصل لكل الطلاب مباشرة.</span></div>
+        : <div className="demo"><I n="info" size={18} style={{ color: 'var(--mid)', marginTop: 1 }} /><span>بدون تسجيل دخول كمشرف، الملف ينحفظ على جهازك فقط.</span></div>}
 
       <label className="field"><span>المادة *</span>
         <select className="input" value={f.course} onChange={set('course')}>

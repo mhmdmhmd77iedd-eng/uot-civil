@@ -7,10 +7,10 @@ import { Bar, Empty, tap } from '../components/ui'
 const norm = (t) => t.toLowerCase().replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي')
 
 export default function Library({ nav }) {
-  const { profile: p, uploads } = useStore()
+  const { profile: p, uploads, srvFiles } = useStore()
   const [q, setQ] = useState('')
   const [all, setAll] = useState(false)
-  const count = useMemo(() => uploads.reduce((m, u) => ((m[u.course] = (m[u.course] || 0) + 1), m), {}), [uploads])
+  const count = useMemo(() => [...uploads, ...(srvFiles || [])].reduce((m, u) => ((m[u.course] = (m[u.course] || 0) + 1), m), {}), [uploads])
 
   const list = useMemo(() => {
     let base = all ? COURSES.filter((c) => !c.branches || !p.branch || c.branches.includes(p.branch) || p.stage === 1) : coursesFor(p)

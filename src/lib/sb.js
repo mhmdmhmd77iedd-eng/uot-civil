@@ -71,6 +71,7 @@ export async function refresh() {
     }
   }
   set({ ready: true, deviceOk: true, roles: roles || [], uniEmail: !!prof?.uni_email, section, member })
+  if (canUpload() && !getState().admin) setState({ admin: true }) // المشرف والدكتور تنفتح لهم أدوات الرفع
   if (isVerified() && section) syncSection()
 }
 
@@ -160,6 +161,49 @@ let started = false
 export function startAuth() {
   if (started) return
   started = true
+  fetchFiles().catch(() => {})
   sb.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_IN' || ev === 'SIGNED_OUT' || ev === 'INITIAL_SESSION') setTimeout(() => refresh().catch(() => set({ ready: true })), 0) })
   addEventListener('online', () => acct.user && refresh().catch(() => {}))
+}
+
+// ===== الملفات (المكتبة المشتركة) =====
+// الكل يقرأ حتى بدون دخول، والرفع للمشرفين والدكتور لمادته
+export async function fetchFiles() {
+  const { data, error } = await sb.from('files').select('*').order('created_at', { ascending: false }).limit(2000)
+  if (error || !data) return
+  setState({ srvFiles: data.map((f) => ({ id: 'srv' + f.id, sid: f.id, course: f.course_id, type: f.type, official: f.official, title: f.title, year: f.year, round: f.round, exam: f.exam, author: f.author, size: f.size, hash: f.hash, kind: 'link', url: f.url, stored: !!f.storage_path, at: f.created_at?.slice(0, 10) })) })
+}
+
+export async function uploadFile(rec, file) {
+  let url = rec.url || null, storage_path = null
+  if (file) {
+    const ext = (file.name.match(/\.([a-z0-9]{1,5})$/i)?.[1] || 'bin').toLowerCase()
+    storage_path = `${rec.course}/${rec.hash}.${ext}`
+    const up = await sb.storage.from('files').upload(storage_path, file, { contentType: file.type || undefined, upsert: false })
+    if (up.error && !/exists/i.test(up.error.message)) return up.error
+    url = sb.storage.from('files').getPublicUrl(storage_path).data.publicUrl
+  }
+  const { error } = await sb.from('files').insert({ course_id: rec.course, type: rec.type, official: rec.official, title: rec.title, year: rec.year, round: rec.round, exam: rec.exam, author: rec.author, url, storage_path, hash: rec.hash || null, size: rec.size || null })
+  if (!error) await fetchFiles()
+  return error
+}
+
+export const canUpload = (a = acct) => isStaff(a) || a.roles.some((r) => r.role === 'doctor')
+
+// تحميل ملفات مادة للاستخدام بدون إنترنت (تنحفظ بذاكرة المتصفح)
+const FC = 'almadani-files'
+export async function saveOffline(files) {
+  const c = await caches.open(FC)
+  let n = 0
+  for (const f of files) {
+    if (!f.stored || !f.url) continue
+    try { if (!(await c.match(f.url))) { const r = await fetch(f.url); if (r.ok) await c.put(f.url, r) } n++ } catch {}
+  }
+  return n
+}
+export async function offlineBlob(url) {
+  try { const r = await (await caches.open(FC)).match(url); return r ? await r.blob() : null } catch { return null }
+}
+export async function offlineCount(files) {
+  try { const c = await caches.open(FC); let n = 0; for (const f of files) if (f.stored && (await c.match(f.url))) n++; return n } catch { return 0 }
 }

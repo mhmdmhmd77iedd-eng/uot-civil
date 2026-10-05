@@ -24,6 +24,7 @@ const initial = {
   helpful: {}, // fileId -> true (تقييم «مفيد»)
   installHidden: false,
   ttKey: null, // جدول الشعبة المستورد
+  srvFiles: [], // ملفات المكتبة المشتركة من الخادم
   srvAnns: [], // إعلانات الخادم (عامة + الشعبة)
   seenAnns: {}, // annId -> true (زر «شفته»)
   seenWelcome: false,
