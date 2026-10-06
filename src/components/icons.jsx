@@ -1,3 +1,5 @@
+import { useStore } from '../lib/store'
+import { NP } from './neoIcons'
 // أيقونات المدني: خط واحد متناسق (1.7) مع طبقة لونية خفيفة (duotone)
 // f = الجزء المظلل الخفيف، s = الخطوط
 const P = {
@@ -252,6 +254,17 @@ const P = {
 
 export function I({ n, size = 22, className = '', style }) {
   const p = P[n] || P.info
+  const neo = useStore((s) => s.theme === 'neo')
+  if (neo) {
+    // طوكيو 2050: خط حاد مع ظل لوني مزدوج (وردي وسماوي) مثل الشاشات المضيئة
+    const g = NP[n] || p.s
+    return (
+      <svg className={'i i-neo ' + className} style={style} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true">
+        {size >= 17 && <><g className="ab1">{g}</g><g className="ab2">{g}</g></>}
+        <g className="ab0">{g}</g>
+      </svg>
+    )
+  }
   return (
     <svg className={'i ' + className} style={style} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {p.f && <g fill="currentColor" stroke="none" opacity=".16">{p.f}</g>}

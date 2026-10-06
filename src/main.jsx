@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles.css'
+import './neo.css'
 import App from './App'
 import './lib/install'
 import { installSounds } from './lib/sound'

@@ -24,6 +24,7 @@ import { Bologna } from './screens/Info'
 import News, { unseenCount } from './screens/News'
 import Exams from './screens/Exams'
 import DevPanel from './screens/DevPanel'
+import NeoLayer from './components/NeoLayer'
 
 const TABS = [
   { id: 'home', n: 'الرئيسية', i: 'home' },
@@ -110,6 +111,7 @@ export default function App() {
   return (
     <ToastHost>
       <Watermark />
+      <NeoLayer />
       <div className="app">
         <S key={cur.name + JSON.stringify(cur.p)} {...props} />
         {!['home', 'quotes', 'spotlight'].includes(cur.name) && <QuoteBand seed={cur.name} nav={nav} />}
