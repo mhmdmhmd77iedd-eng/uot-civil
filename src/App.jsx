@@ -37,9 +37,12 @@ function useTheme(theme) {
   useEffect(() => {
     const mq = matchMedia('(prefers-color-scheme: dark)')
     const apply = () => {
-      const dark = theme === 'dark' || (theme === 'auto' && mq.matches)
+      // «طوكيو 2050» عالم ليلي كامل فوق الوضع الداكن
+      const neo = theme === 'neo'
+      const dark = neo || theme === 'dark' || (theme === 'auto' && mq.matches)
       document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-      document.querySelector('meta[name=theme-color]')?.setAttribute('content', dark ? '#121518' : '#f7f5f0')
+      if (neo) document.documentElement.dataset.world = 'neo'; else delete document.documentElement.dataset.world
+      document.querySelector('meta[name=theme-color]')?.setAttribute('content', neo ? '#06070f' : dark ? '#121518' : '#f7f5f0')
     }
     apply()
     mq.addEventListener('change', apply)

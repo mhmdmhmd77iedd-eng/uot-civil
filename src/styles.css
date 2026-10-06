@@ -712,3 +712,62 @@ button.prod:active { transform: scale(.96); }
 .xrules summary { display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; list-style: none; color: var(--ac); }
 .xrules summary::-webkit-details-marker { display: none; }
 .xrules ol { margin: 10px 0 8px; padding-inline-start: 20px; font-size: 13.5px; line-height: 1.8; }
+
+/* ===================== عالم «طوكيو 2050» ===================== */
+.worlds { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.world { position: relative; overflow: hidden; border: none; cursor: pointer; text-align: right; border-radius: 20px; padding: 10px 12px 12px; display: grid; gap: 2px; font: inherit; box-shadow: var(--sh), inset 0 0 0 1px var(--ln2); transition: transform .3s var(--spring), box-shadow .3s; }
+.world:active { transform: scale(.96); }
+.world b { font-family: var(--hd); font-size: 15px; }
+.world > span:last-child { font-size: 11.5px; opacity: .75; }
+.world .wp { height: 64px; border-radius: 14px; margin-bottom: 8px; position: relative; overflow: hidden; display: flex; gap: 5px; align-items: flex-end; padding: 8px; }
+.world .wp i { flex: 1; border-radius: 6px; }
+.w-classic { background: #f5f7f4; color: #1d2427; }
+.w-classic .wp { background: linear-gradient(#e7efe9 1px, transparent 1px) 0 0 / 12px 12px, linear-gradient(90deg, #e7efe9 1px, #fbfcfa 1px) 0 0 / 12px 12px; }
+.w-classic .wp i { background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.08); height: 60%; } .w-classic .wp i:nth-child(2) { background: linear-gradient(135deg, #0b7a6e, #3cc0a0); height: 85%; }
+.w-neo { background: #070912; color: #eef3ff; }
+.w-neo .wp { background: radial-gradient(60% 80% at 80% 0, rgba(255,46,136,.55), transparent 70%), radial-gradient(60% 80% at 10% 20%, rgba(25,227,255,.45), transparent 70%), #05060c; }
+.w-neo .wp::after { content: ''; position: absolute; left: -20%; right: -20%; bottom: -30%; height: 70%; background-image: linear-gradient(rgba(25,227,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,46,136,.45) 1px, transparent 1px); background-size: 12px 12px; transform: perspective(80px) rotateX(55deg); transform-origin: top; animation: floor 2.5s linear infinite; }
+.w-neo .wp i { position: relative; z-index: 1; background: rgba(255,255,255,.08); border: 1px solid rgba(25,227,255,.5); box-shadow: 0 0 10px rgba(25,227,255,.5); height: 55%; } .w-neo .wp i:nth-child(2) { height: 90%; border-color: rgba(255,46,136,.7); box-shadow: 0 0 12px rgba(255,46,136,.7); }
+.world.on { box-shadow: 0 0 0 2.5px var(--ac), var(--sh2); }
+.world.on::after { content: '✓'; position: absolute; top: 14px; left: 18px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; background: var(--ac); color: #fff; font-family: sans-serif; }
+
+:root[data-world='neo'] {
+  --bg: #06070f; --sf: rgba(17, 21, 40, .72); --sf2: rgba(255, 255, 255, .06); --tx: #eef3ff; --mu: #8f9ac0;
+  --ln: rgba(120, 200, 255, .18); --ln2: rgba(25, 227, 255, .14);
+  --ac: #19e3ff; --ac2: #ff2e88; --acs: rgba(25, 227, 255, .12); --gold: #ffc247; --good: #2ef2a0; --mid: #ffb547; --bad: #ff4d7d;
+  --grad: linear-gradient(135deg, #ff2e88 0%, #8a5cff 50%, #19e3ff 100%);
+  --grad-warm: linear-gradient(135deg, #ffc247, #ff6b3d);
+  --sh: 0 0 0 1px rgba(25, 227, 255, .09), 0 12px 30px -14px rgba(0, 0, 0, .9);
+  --sh2: 0 0 34px -8px rgba(255, 46, 136, .45), 0 20px 50px rgba(0, 0, 0, .7);
+  --grid: rgba(25, 227, 255, .07);
+}
+:root[data-world='neo'] body { background: #06070f; }
+:root[data-world='neo'] body::before { height: 100%; background-image: radial-gradient(45% 30% at 90% 0%, rgba(255,46,136,.32), transparent 70%), radial-gradient(50% 35% at 0% 15%, rgba(25,227,255,.24), transparent 70%), radial-gradient(60% 40% at 50% 100%, rgba(138,92,255,.22), transparent 70%); background-size: auto; -webkit-mask-image: none; mask-image: none; animation: skyshift 20s ease-in-out infinite alternate; }
+:root[data-world='neo'] body::after { inset: auto -50% 0 -50%; height: 45vh; opacity: .35; mix-blend-mode: normal; background-image: linear-gradient(rgba(25,227,255,.45) 1px, transparent 1px), linear-gradient(90deg, rgba(255,46,136,.4) 1px, transparent 1px); background-size: 48px 48px; transform: perspective(360px) rotateX(64deg); transform-origin: top; -webkit-mask-image: linear-gradient(transparent, #000 50%); mask-image: linear-gradient(transparent, #000 50%); animation: floor 4s linear infinite; }
+:root[data-world='neo'] .app::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 30; background: repeating-linear-gradient(transparent 0 3px, rgba(255,255,255,.018) 3px 4px); }
+:root[data-world='neo'] h1 { background: linear-gradient(100deg, #fff 30%, #b9f6ff 65%, #ffc3df); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 12px rgba(25,227,255,.3)); }
+:root[data-world='neo'] .sec::before { background: linear-gradient(90deg, #19e3ff, #ff2e88); box-shadow: 0 0 8px #19e3ff; }
+:root[data-world='neo'] :is(.card, .row, .crow, .tile, .prow, .gcard, .ann, .tabs, .seg, .search, .switchrow, .unitsum, .rmap, .ubar, .iconbtn, .prod, .xrow, .cmt, .demo, .stat div, .facts > *, .today, .qband, .chip) { backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); }
+:root[data-world='neo'] :is(.card, .row, .crow, .tile, .prow, .gcard, .ann, .rmap, .prod, .today) { box-shadow: inset 0 0 0 1px rgba(25,227,255,.12), 0 14px 34px -16px rgba(0,0,0,.9); }
+@media (hover: hover) { :root[data-world='neo'] :is(.row, .crow, .tile, .prod):hover { box-shadow: inset 0 0 0 1px rgba(25,227,255,.45), 0 0 24px -6px rgba(25,227,255,.45); } }
+:root[data-world='neo'] .tile .e { box-shadow: 0 0 18px -2px var(--h), inset 0 1px 0 rgba(255,255,255,.35); }
+:root[data-world='neo'] .crow .cb, :root[data-world='neo'] .row .ic { box-shadow: 0 0 14px -3px var(--h); }
+:root[data-world='neo'] :is(.chip.on, .seg button.on, .tabs button.on, .btn.ac, .iconbtn.ac) { color: #fff; text-shadow: 0 0 8px rgba(0,0,0,.35); box-shadow: 0 0 20px -4px rgba(255,46,136,.6), 0 0 14px -6px rgba(25,227,255,.7); }
+:root[data-world='neo'] .btn.soft { background: rgba(25,227,255,.1); color: #7cf0ff; box-shadow: inset 0 0 0 1px rgba(25,227,255,.3); }
+:root[data-world='neo'] .hero { background: linear-gradient(135deg, rgba(255,46,136,.85), rgba(138,92,255,.85) 50%, rgba(25,227,255,.8)); box-shadow: 0 0 40px -10px rgba(255,46,136,.7), 0 0 30px -12px rgba(25,227,255,.8); }
+:root[data-world='neo'] .hero.exam { background: linear-gradient(135deg, #ff4d4d, #ff2e88 55%, #ffb547); }
+:root[data-world='neo'] .nav { background: rgba(8,10,22,.78); box-shadow: 0 0 0 1px rgba(25,227,255,.18), 0 -6px 30px -10px rgba(25,227,255,.35), 0 20px 40px rgba(0,0,0,.6); }
+:root[data-world='neo'] .nav button.on { color: #fff; }
+:root[data-world='neo'] .input, :root[data-world='neo'] select.input, :root[data-world='neo'] textarea.input { background: rgba(255,255,255,.05); border-color: rgba(25,227,255,.22); color: #eef3ff; }
+:root[data-world='neo'] .input:focus { border-color: #19e3ff; box-shadow: 0 0 0 3px rgba(25,227,255,.18), 0 0 16px -4px #19e3ff; }
+:root[data-world='neo'] .sheet { background: linear-gradient(#0d1022, #070912); box-shadow: 0 -1px 0 rgba(25,227,255,.35), 0 -20px 60px -20px rgba(255,46,136,.4); }
+:root[data-world='neo'] .sheet-bg { background: rgba(2,3,10,.6); backdrop-filter: blur(4px); }
+:root[data-world='neo'] .toast { background: linear-gradient(135deg, #1a1d38, #0d1022); color: #fff; box-shadow: 0 0 0 1px rgba(25,227,255,.35), 0 0 24px -6px #19e3ff; }
+:root[data-world='neo'] .tg.u, :root[data-world='neo'] .facts > div b, :root[data-world='neo'] .rn .m b { color: #ffc247; }
+:root[data-world='neo'] .big, :root[data-world='neo'] .ut b, :root[data-world='neo'] .cd b { text-shadow: 0 0 14px currentColor; }
+:root[data-world='neo'] .wm { opacity: .5; }
+:root[data-world='neo'] .foot { color: var(--mu); }
+:root[data-world='neo'] .logo { box-shadow: 0 0 18px -2px rgba(25,227,255,.6); border-radius: 14px; }
+:root[data-world='neo'] .screen { animation: neoin .55s var(--ease) both; }
+@keyframes neoin { from { opacity: 0; translate: 0 14px; filter: blur(6px) hue-rotate(40deg); } to { opacity: 1; translate: 0 0; filter: none; } }
+@media (prefers-reduced-motion: reduce) { :root[data-world='neo'] body::before, :root[data-world='neo'] body::after { animation: none; } }
