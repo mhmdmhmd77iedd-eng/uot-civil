@@ -680,13 +680,13 @@ button.prod:active { transform: scale(.96); }
 .regsum { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--mu); }
 .regsum b { font-family: var(--hd); color: var(--ac); font-size: 16px; }
 .regwrap { border-radius: 14px; overflow: hidden; box-shadow: var(--sh2); background: #fff; }
-.regpage { position: relative; width: 100%; aspect-ratio: 935 / 1210; container-type: inline-size; color: #0b2a8a; font-family: 'IBM Plex Sans Arabic', Tahoma, sans-serif; font-weight: 600; page: reg; }
+.regpage { position: relative; width: 100%; aspect-ratio: 935 / 1210; container-type: inline-size; color: #111; font-family: 'Noto Naskh Arabic', 'Traditional Arabic', 'Times New Roman', serif; font-weight: 700; page: reg; }
 .regpage img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.rf { position: absolute; transform: translateY(-50%); font-size: 1.9cqw; line-height: 1.2; white-space: nowrap; }
+.rf { position: absolute; transform: translateY(-50%); font-size: 2.15cqw; line-height: 1.25; white-space: nowrap; }
 .rf.c { transform: translate(-50%, -50%); text-align: center; }
-.rf.ltr { direction: ltr; }
-.rf.cn { white-space: normal; font-size: 1.75cqw; text-align: right; }
-.rf.tick { transform: translate(-50%, -50%); font-size: 2.8cqw; color: #0b2a8a; }
+.rf.ltr { direction: ltr; font-family: 'Noto Naskh Arabic', 'Times New Roman', serif; }
+.rf.cn { white-space: normal; font-size: 2cqw; text-align: right; }
+.rf.tick { transform: translate(-50%, -50%); font-size: 2.8cqw; color: #111; font-family: sans-serif; }
 .cwrap { display: grid; gap: 6px; }
 .cmode { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--sf2); border-radius: 12px; padding: 3px; }
 .cmode button { border: none; background: none; border-radius: 9px; padding: 6px; font-size: 12px; font-weight: 600; color: var(--mu); cursor: pointer; transition: background .3s, color .3s; }

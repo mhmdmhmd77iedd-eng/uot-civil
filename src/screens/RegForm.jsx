@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import '@fontsource/noto-naskh-arabic/700.css'
 import { useStore, setState } from '../lib/store'
 import { semCourses, BRANCHES, STAGES } from '../data/catalog'
 import { currentSemester } from '../lib/profile'
@@ -68,8 +69,8 @@ export default function RegForm({ back, nav, sem: sem0 }) {
       <div className="regwrap">
         <div className="regpage">
           <img src="forms/bologna-reg.jpg" alt="استمارة التسجيل على المقررات الدراسية" />
-          <span className="rf" style={{ right: pctR(595), top: pctT(143) }}>{branch}</span>
-          <span className="rf" style={{ right: pctR(785), top: pctT(233) }}>{f.name}</span>
+          <span className="rf" style={{ right: pctR(588), top: pctT(143) }}>{branch}</span>
+          <span className="rf" style={{ right: pctR(772), top: pctT(233) }}>{f.name}</span>
           <span className="rf ltr" style={{ right: pctR(380), top: pctT(233) }}>{f.uid}</span>
           <span className="rf tick" style={{ left: pctL(sem === 1 ? 676 : 522), top: pctT(270) }}>✓</span>
           <span className="rf ltr c" style={{ left: pctL(292), top: pctT(276) }}>{y1}</span>
@@ -86,7 +87,7 @@ export default function RegForm({ back, nav, sem: sem0 }) {
               <span className="rf c" style={{ left: pctL(110), top: `${ROWS[i]}%` }}>{c.ects}</span>
             </span>
           ))}
-          <span className="rf" style={{ right: pctR(790), top: pctT(853) }}>{f.name}</span>
+          <span className="rf" style={{ right: pctR(782), top: pctT(853) }}>{f.name}</span>
           <span className="rf" style={{ right: pctR(815), top: pctT(915) }}>{f.letter}</span>
           <span className="rf" style={{ right: pctR(772), top: pctT(938) }}>{level}</span>
           <span className="rf ltr" style={{ right: pctR(815), top: pctT(960) }}>{today}</span>

@@ -28,7 +28,9 @@ function Plan({ profile, plan, nav }) {
   const [add, setAdd] = useState(false)
   // مواد الفرع تنحسب ضمن المواد الاختيارية (وحداتها من المخطط الرسمي)
   const slots = (ELECTIVE_SLOTS[`${profile.stage}-${sem}`] || []).map((u, i) => ({ id: `EL:${profile.stage}-${sem}:${i}`, name: `مادة اختيارية من فرعك (${i + 1})`, ects: u, stage: profile.stage, sem }))
-  const mine = [...coursesFor(profile).filter((c) => c.sem === sem && !c.branches), ...slots]
+  // مواد الفرع الحقيقية بدل خانات «اختيارية» (الخانة تبقى بس إذا ما نعرف مواد الفرع لهذا الفصل)
+  const branchC = coursesFor(profile).filter((c) => c.sem === sem && c.branches)
+  const mine = [...coursesFor(profile).filter((c) => c.sem === sem && !c.branches), ...(branchC.length ? branchC : slots)]
   const unit = (id) => courseById[id]?.ects ?? slots.find((x) => x.id === id)?.ects ?? 0
   // المواد المحمّلة عليك (من أي فصل) بقائمة وحدة، وكل وحدة تنسجل بفصلها
   const carriedIds = new Set(plan?.carried ?? COURSES.filter((c) => c.stage < profile.stage && [...(plan?.[1] || []), ...(plan?.[2] || [])].includes(c.id)).map((c) => c.id))
@@ -38,7 +40,8 @@ function Plan({ profile, plan, nav }) {
   // المادة اللي متطلبها محمّل عليك تنقفل وما تنحسب وحداتها
   const lockOf = (id) => before(id).find((x) => carriedIds.has(x))
   // أول مرة: كل مواد مرحلتك مختارة
-  const chosen = new Set(plan?.[sem] ?? mine.map((c) => c.id))
+  const saved = plan?.[sem]
+  const chosen = new Set(saved ? (branchC.some((c) => saved.includes(c.id)) ? saved : [...saved, ...branchC.map((c) => c.id)]) : mine.map((c) => c.id))
   const counted = [...mine.filter((c) => chosen.has(c.id) && !lockOf(c.id)), ...carried]
   const total = counted.reduce((t, c) => t + unit(c.id), 0)
   const left = MAX_UNITS - total
