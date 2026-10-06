@@ -40,7 +40,7 @@ const AUTH_ERR = {
   'Email not confirmed': 'الحساب يحتاج تأكيد إيميل، راجع المطوّر',
   'Signups not allowed for this instance': 'تسجيل الحسابات الجديدة مسكّر حالياً',
 }
-const authMsg = (e) => AUTH_ERR[e?.message] || (/password/i.test(e?.message || '') ? 'كلمة السر لازم 6 أحرف أو أكثر' : /email/i.test(e?.message || '') ? 'اكتب الإيميل بشكل صحيح' : 'ما نجح، تأكد من النت وجرّب')
+const authMsg = (e) => AUTH_ERR[e?.message] || (/confirm|sending|rate limit/i.test(e?.message || '') ? 'الخادم يحاول يرسل رسالة تأكيد للإيميل. لازم المطوّر يطفي Confirm email بـSupabase' : /password/i.test(e?.message || '') ? 'كلمة السر لازم 6 أحرف أو أكثر' : /email/i.test(e?.message || '') ? 'اكتب الإيميل بشكل صحيح' : 'ما نجح، تأكد من النت وجرّب')
 export async function signInEmail(email, password) {
   const { error } = await sb.auth.signInWithPassword({ email: email.trim(), password })
   return error ? authMsg(error) : null
