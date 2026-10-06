@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react'
 
 const KEY = 'almadani:v1'
 const BK = 'almadani:backups'
-export const VERSION = '1.2.0'
+export const VERSION = '1.3.0'
 
 const initial = {
   profile: null, // { branch, stage, shift, name }
@@ -29,7 +29,7 @@ const initial = {
   cart: {}, // productId -> الكمية
   favQuotes: {}, // نص الاقتباس -> true
   srvFiles: [], // ملفات المكتبة المشتركة من الخادم
-  srvAnns: [], // إعلانات الخادم (عامة + الشعبة)
+  srvAnns: [], srvExams: [], srvRequests: [], // إعلانات الخادم (عامة + الشعبة)
   seenAnns: {}, // annId -> true (زر «شفته»)
   seenWelcome: false,
 }

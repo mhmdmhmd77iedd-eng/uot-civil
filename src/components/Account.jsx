@@ -5,7 +5,7 @@ import { label } from '../lib/profile'
 import { I, HUES } from './icons'
 import { tap, useToast } from './ui'
 
-const ROLE_N = { owner: 'المطوّر', supervisor: 'مشرف', doctor: 'دكتور مادة', rep: 'ممثل الشعبة' }
+const ROLE_N = { owner: 'المطوّر', supervisor: 'مشرف', doctor: 'دكتور مادة', rep: 'ممثل الشعبة', stage_rep: 'ممثل المرحلة' }
 
 export function AccountCard({ nav }) {
   const a = useAcct()
@@ -42,6 +42,7 @@ export function AccountCard({ nav }) {
       {a.member === 'none' && !isVerified(a) && a.section && (
         <button className="btn ac full" onClick={async () => { tap(); const e = await joinSection(); toast(e ? 'ما انرسل الطلب، جرّب مرة ثانية' : 'انرسل طلبك لممثل الشعبة') }}>اطلب الانضمام لشعبتك</button>
       )}
+      {isStaff(a) && <button className="btn ac full" onClick={() => nav('devpanel')}><I n="chart" size={18} />لوحة المطوّر: المتابعة والصلاحيات</button>}
       {(isRep(a) || isStaff(a)) && a.section && (
         <button className="btn soft full" onClick={() => nav('rep')}><I n="shield" size={18} />إدارة شعبتي</button>
       )}

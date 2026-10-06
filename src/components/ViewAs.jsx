@@ -1,5 +1,5 @@
 import { useStore, setState } from '../lib/store'
-import { useAcct, isStaff, refresh } from '../lib/sb'
+import { useAcct, isStaff, refresh, fetchBoards, fetchExams } from '../lib/sb'
 import { BRANCHES, STAGES, SHIFTS } from '../data/catalog'
 import { label } from '../lib/profile'
 import { I } from './icons'
@@ -21,12 +21,12 @@ export function ViewAs() {
     if (next.stage < 2) next.branch = null
     else if (!next.branch) next.branch = real?.branch || 'str'
     setState({ realProfile: real || p, profile: next })
-    if (a.user) refresh().catch(() => {})
+    if (a.user) refresh().catch(() => {}); else { fetchBoards().catch(() => {}); fetchExams().catch(() => {}) }
   }
   function back() {
     tap()
     setState({ profile: real, realProfile: null })
-    if (a.user) refresh().catch(() => {})
+    if (a.user) refresh().catch(() => {}); else { fetchBoards().catch(() => {}); fetchExams().catch(() => {}) }
   }
   return (
     <div className="card viewas">

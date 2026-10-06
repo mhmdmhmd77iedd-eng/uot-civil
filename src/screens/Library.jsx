@@ -1,60 +1,56 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../lib/store'
-import { COURSES, coursesFor, STAGES } from '../data/catalog'
-import { courseHue, initial } from './Home'
+import { COURSES, coursesFor, semCourses, STAGES } from '../data/catalog'
+import { currentSemester } from '../lib/profile'
+import { CourseRow } from '../components/CourseRow'
+import { I } from '../components/icons'
 import { Bar, Empty, tap } from '../components/ui'
 
 const norm = (t) => t.toLowerCase().replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي')
+const SEM = ['', 'الفصل الأول', 'الفصل الثاني']
 
 export default function Library({ nav }) {
-  const { profile: p, uploads, srvFiles } = useStore()
+  const { profile: p, plan, uploads, srvFiles } = useStore()
   const [q, setQ] = useState('')
-  const [all, setAll] = useState(false)
-  const count = useMemo(() => [...uploads, ...(srvFiles || [])].reduce((m, u) => ((m[u.course] = (m[u.course] || 0) + 1), m), {}), [uploads])
+  const [mode, setMode] = useState('now')
+  const sem = currentSemester()
+  const files = (uploads?.length || 0) + (srvFiles?.length || 0)
 
-  const list = useMemo(() => {
-    let base = all ? COURSES.filter((c) => !c.branches || !p.branch || c.branches.includes(p.branch) || p.stage === 1) : coursesFor(p)
+  // ثلاث طبقات واضحة: مواد هذا الفصل (من خطة الوحدات)، كل مواد مرحلتي، كل مواد الكلية
+  const groups = useMemo(() => {
     if (q.trim()) {
       const n = norm(q.trim())
-      base = COURSES.filter((c) => norm(c.name).includes(n) || norm(c.en).includes(n) || norm(c.code).includes(n))
+      return [['نتائج البحث', COURSES.filter((c) => norm(c.name).includes(n) || norm(c.en).includes(n) || norm(c.code).includes(n))]]
     }
-    return base
-  }, [p, q, all])
-
-  const groups = useMemo(() => {
-    const g = {}
-    list.forEach((c) => { const k = `${c.stage}-${c.sem}`; (g[k] ||= []).push(c) })
-    return Object.entries(g).sort()
-  }, [list])
+    if (mode === 'now') return [[`${SEM[sem]} · ${STAGES.find((s) => s.id === p.stage)?.name || ''}`, semCourses(p, plan, sem)]]
+    if (mode === 'stage') { const cs = coursesFor(p); return [1, 2].map((s) => [SEM[s], cs.filter((c) => c.sem === s)]) }
+    const base = COURSES.filter((c) => !c.branches || !p.branch || c.branches.includes(p.branch))
+    return STAGES.flatMap((st) => [1, 2].map((s) => [`${st.name} · ${SEM[s]}`, base.filter((c) => c.stage === st.id && c.sem === s)]))
+  }, [p, plan, q, mode, sem])
+  const total = groups.reduce((t, [, cs]) => t + cs.length, 0)
 
   return (
     <div className="screen">
-      <Bar title="المكتبة" sub="اختر المادة لترى ملازمها وأسئلتها" />
-      <input className="input" type="search" placeholder="ابحث عن مادة… (مثلاً: خرسانة أو STMA)" value={q} onChange={(e) => setQ(e.target.value)} style={{ marginBottom: 12 }} />
+      <Bar title="المكتبة" sub={files ? `${files} ملف مرفوع لحد الآن` : 'اختر المادة وتلگى ملازمها وأسئلتها'} />
+      <div className="search">
+        <I n="search" size={18} />
+        <input type="search" placeholder="ابحث عن مادة… خرسانة، تربة، STMA" value={q} onChange={(e) => setQ(e.target.value)} />
+      </div>
       {!q && (
-        <div className="tabs">
-          <button className={!all ? 'on' : ''} onClick={() => { tap(); setAll(false) }}>موادي</button>
-          <button className={all ? 'on' : ''} onClick={() => { tap(); setAll(true) }}>كل المراحل</button>
+        <div className="seg">
+          <button className={mode === 'now' ? 'on' : ''} onClick={() => { tap(); setMode('now') }}>هذا الفصل</button>
+          <button className={mode === 'stage' ? 'on' : ''} onClick={() => { tap(); setMode('stage') }}>مرحلتي</button>
+          <button className={mode === 'all' ? 'on' : ''} onClick={() => { tap(); setMode('all') }}>كل المراحل</button>
         </div>
       )}
-      {groups.map(([k, cs]) => {
-        const [st, sem] = k.split('-').map(Number)
-        return (
-          <div key={k}>
-            <div className="sec">{STAGES.find((s) => s.id === st)?.name} · الفصل {sem === 1 ? 'الأول' : 'الثاني'}</div>
-            <div className="stack stagger">
-              {cs.map((c) => (
-                <button key={c.id} className="row" style={{ '--h': courseHue(c.id) }} onClick={() => { tap(); nav('course', { id: c.id }) }}>
-                  <span className="ic">{initial(c.name)}</span>
-                  <div style={{ minWidth: 0 }}><div className="t">{c.name}</div><div className="m">{c.en} · {c.code.includes('-') ? 'مادة فرع' : c.code}</div></div>
-                  <span className="end">{count[c.id] ? `${count[c.id]} ملف` : ''}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )
-      })}
-      {!list.length && <Empty e="search" t="ما لگينا مادة بهذا الاسم" />}
+      {groups.filter(([, cs]) => cs.length).map(([t, cs]) => (
+        <div key={t}>
+          <div className="sec">{t} <span className="small muted" style={{ fontWeight: 500, marginInlineStart: 'auto' }}>{cs.length} مواد</span></div>
+          <div className="stack">{cs.map((c, i) => <CourseRow key={c.id} c={c} nav={nav} i={i} />)}</div>
+        </div>
+      ))}
+      {mode === 'now' && !q && <button className="linkrow" onClick={() => { tap(); nav('map', { tab: 'plan' }) }}><I n="sheet" size={17} />عندك مادة محمّلة أو ما راح تسجل مادة؟ عدّل خطة الوحدات</button>}
+      {!total && <Empty e="search" t="ما لگينا مادة بهذا الاسم" />}
     </div>
   )
 }

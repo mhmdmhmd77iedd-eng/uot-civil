@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useStore, setState } from '../lib/store'
 import { COURSES, coursesFor } from '../data/catalog'
-import { DAYS, CLASS_KINDS, TASK_TYPES, taskType, uid, ymd, toMin, fmtTime, dueText, daysLeft, dueAt, courseName, weekDates, dayIdx, askNotify, notifySupported, checkReminders } from '../lib/schedule'
-import { courseHue } from './Home'
+import { DAYS, CLASS_KINDS, TASK_TYPES, taskType, uid, ymd, toMin, fmtTime, dueText, daysLeft, dueAt, courseName, weekDates, dayIdx, askNotify, notifySupported, checkReminders, upcomingTasks, dateLong } from '../lib/schedule'
+import { DayLine, useMinute } from '../components/Today'
+import { courseHue } from '../lib/look'
 import { timetableFor } from '../data/timetables'
 import { currentSemester } from '../lib/profile'
 import { useAcct, isRep, publishTask, deleteSrvTask } from '../lib/sb'
@@ -112,28 +113,54 @@ export function TaskRow({ t, onEdit }) {
   )
 }
 
+function ClassInfo({ c, nav, onEdit, onClose }) {
+  const srv = c.src === 'srv'
+  return (
+    <>
+      <div className="cinfo" style={{ '--h': courseHue(c.course) }}>
+        <div className="ci-t">{c.title || courseName(c.course)}</div>
+        <div className="ci-g">
+          <span><I n="calendar" size={15} />{DAYS[c.day]}</span>
+          <span><I n="clock" size={15} />{fmtTime(c.start)} - {fmtTime(c.end)}</span>
+          {c.room && <span><I n="pin" size={15} />{c.room}</span>}
+          <span><I n="book" size={15} />{c.kind}</span>
+          {c.prof && <span><I n="user" size={15} />{c.prof}</span>}
+        </div>
+      </div>
+      {srv && <div className="small muted" style={{ margin: '10px 2px' }}>من جدول الشعبة اللي نشره الممثل.</div>}
+      <div className="grid2" style={{ marginTop: 12 }}>
+        {c.course ? <button className="btn ac" onClick={() => { onClose(); nav('course', { id: c.course }) }}><I n="folder" size={18} />ملفات المادة</button> : <span />}
+        {!srv && <button className="btn soft" onClick={onEdit}><I n="pencil" size={18} />تعديل</button>}
+      </div>
+    </>
+  )
+}
+
 export default function Schedule({ nav, tab: tab0 }) {
   const s = useStore()
   const toast = useToast()
-  const [tab, setTab] = useState(tab0 || 'classes')
-  const [day, setDay] = useState(Math.min(dayIdx(), 5))
+  const now = useMinute()
+  const today = dayIdx(now)
+  const [tab, setTab] = useState(tab0 || 'today')
+  const [day, setDay] = useState(Math.min(today, 5))
   const [showDone, setShowDone] = useState(false)
-  const [edit, setEdit] = useState(null) // { kind:'class'|'task', item }
+  const [edit, setEdit] = useState(null) // { kind:'class'|'task'|'info', item }
   const [perm, setPerm] = useState(notifySupported() ? Notification.permission : 'unsupported')
-  const dates = weekDates()
-  const today = dayIdx()
-  const now = new Date()
-  const cur = now.getHours() * 60 + now.getMinutes()
-  const list = s.classes.filter((c) => c.day === day).sort((a, b) => toMin(a.start) - toMin(b.start))
+  const dates = weekDates(now)
   const tasks = s.tasks.filter((t) => (showDone ? t.done : !t.done)).sort((a, b) => (showDone ? dueAt(b) - dueAt(a) : dueAt(a) - dueAt(b)))
   const tt = timetableFor(s.profile, currentSemester())
   const ttImported = tt && s.ttKey === tt.key
+  const hasSrv = s.classes.some((c) => c.src === 'srv')
   function importTT() {
     tap()
     setState((x) => ({ ttKey: tt.key, classes: [...x.classes.filter((c) => c.src !== 'rep'), ...tt.classes.map((c, i) => ({ ...c, id: `r${i}-${tt.key}`, src: 'rep' }))] }))
     toast('انضاف جدول شعبتك')
   }
   const openCount = s.tasks.filter((t) => !t.done && daysLeft(t) >= 0).length
+  // اليوم: إذا الجمعة نعرض السبت
+  const showDay = today === 6 ? 0 : today
+  const soonTasks = upcomingTasks(s.tasks, now).filter((t) => daysLeft(t, now) <= 1)
+  const dayCount = (i) => s.classes.filter((c) => c.day === i).length
 
   useEffect(() => { checkReminders() }, [])
 
@@ -145,11 +172,22 @@ export default function Schedule({ nav, tab: tab0 }) {
     else if (r === 'unsupported') toast('جهازك ما يدعم التنبيهات. على الآيفون ثبّت التطبيق أولاً')
     else toast('التنبيهات مقفولة من المتصفح، فعّلها من إعداداته')
   }
+  const add = () => { tap(); setEdit({ kind: tab === 'tasks' ? 'task' : 'class', isNew: true }) }
+  const openClass = (c) => setEdit({ kind: 'info', item: c })
 
   return (
     <div className="screen">
-      <Bar title="جدولي" sub="محاضراتك ومواعيد الكوزات والتقارير بمكان واحد"
-        end={<button className="iconbtn" onClick={bell} aria-label="التنبيهات" style={perm === 'granted' ? { color: 'var(--ac)' } : null}><I n={perm === 'granted' ? 'alarm' : 'bell'} size={20} /></button>} />
+      <Bar title="جدولي" sub={tab === 'today' ? dateLong(now) : 'محاضراتك وكوزاتك وتسليماتك'}
+        end={<div style={{ display: 'flex', gap: 8 }}>
+          <button className="iconbtn" onClick={bell} aria-label="التنبيهات" style={perm === 'granted' ? { color: 'var(--ac)' } : null}><I n={perm === 'granted' ? 'alarm' : 'bell'} size={20} /></button>
+          <button className="iconbtn ac" onClick={add} aria-label="إضافة"><I n="plus" size={21} /></button>
+        </div>} />
+
+      <div className="seg">
+        <button className={tab === 'today' ? 'on' : ''} onClick={() => { tap(); setTab('today') }}>اليوم</button>
+        <button className={tab === 'week' ? 'on' : ''} onClick={() => { tap(); setTab('week') }}>الأسبوع</button>
+        <button className={tab === 'tasks' ? 'on' : ''} onClick={() => { tap(); setTab('tasks') }}>التسليمات{openCount ? <span className="dotn" style={{ background: 'var(--mid)' }}>{openCount}</span> : null}</button>
+      </div>
 
       {perm !== 'granted' && s.tasks.length > 0 && (
         <button className="install" style={{ width: '100%', border: 'none', textAlign: 'right', cursor: 'pointer', marginTop: 0, marginBottom: 14, color: 'var(--tx)' }} onClick={bell}>
@@ -157,57 +195,46 @@ export default function Schedule({ nav, tab: tab0 }) {
           <div><b style={{ fontSize: 14 }}>فعّل التنبيهات</b><div className="small muted">ننبهك قبل الكوز أو التقرير بيوم، وصباح نفس اليوم.</div></div>
         </button>
       )}
+      {tab !== 'tasks' && tt && !ttImported && !hasSrv && (
+        <div className="install" style={{ marginTop: 0, marginBottom: 14 }}>
+          <span className="ic"><I n="week" size={22} /></span>
+          <div style={{ flex: 1, minWidth: 0 }}><b style={{ fontSize: 14 }}>جدول شعبتك جاهز</b><div className="small muted">{tt.classes.length} محاضرة بالأسبوع. تضيفه بضغطة.</div></div>
+          <button className="btn warm sm" onClick={importTT}>أضفه</button>
+        </div>
+      )}
 
-      <div className="tabs">
-        <button className={tab === 'classes' ? 'on' : ''} onClick={() => { tap(); setTab('classes') }}>المحاضرات</button>
-        <button className={tab === 'tasks' ? 'on' : ''} onClick={() => { tap(); setTab('tasks') }}>الكوزات والتسليمات{openCount ? ` (${openCount})` : ''}</button>
-      </div>
-
-      {tab === 'classes' ? (
+      {tab === 'today' && (
         <>
-          {tt && !ttImported && (
-            <div className="install" style={{ marginTop: 0, marginBottom: 14 }}>
-              <span className="ic"><I n="week" size={22} /></span>
-              <div style={{ flex: 1, minWidth: 0 }}><b style={{ fontSize: 14 }}>جدول شعبتك الرسمي نازل</b><div className="small muted">الفصل الأول {tt.year}، {tt.classes.length} محاضرة بالأسبوع. تضيفه بضغطة.</div></div>
-              <button className="btn warm sm" onClick={importTT}>أضفه</button>
-            </div>
-          )}
-          {ttImported && tt.note && <div className="small muted" style={{ margin: '-4px 4px 10px', display: 'flex', gap: 5, alignItems: 'center' }}><I n="info" size={14} />{tt.note}</div>}
+          <div className="card" style={{ padding: '10px 10px 6px' }}>
+            {today === 6 && <div className="small muted" style={{ margin: '2px 6px 6px' }}>اليوم جمعة، هذا جدول باجر (السبت):</div>}
+            {dayCount(showDay) ? <DayLine day={showDay} now={today === 6 ? new Date(now.getTime() + 864e5) : now} onOpen={openClass} />
+              : <Empty e="week" t={s.classes.length ? 'ماكو محاضرات اليوم' : 'جدولك فارغ'}>{!s.classes.length && <button className="btn soft sm" style={{ marginTop: 12 }} onClick={() => setEdit({ kind: 'class', isNew: true })}><I n="plus" size={17} />أضف محاضراتك</button>}</Empty>}
+          </div>
+          <div className="sec">اليوم وباجر</div>
+          <div className="stack stagger">{soonTasks.map((t) => <TaskRow key={t.id} t={t} onEdit={() => setEdit({ kind: 'task', item: t })} />)}</div>
+          {!soonTasks.length && <div className="small muted" style={{ margin: '0 4px' }}>ماكو كوزات أو تسليمات اليوم أو باجر. <button className="lnk" onClick={() => setTab('tasks')}>شوف كل التسليمات</button></div>}
+        </>
+      )}
+
+      {tab === 'week' && (
+        <>
           <div className="days">
             {DAYS.map((d, i) => (
               <button key={d} className={day === i ? 'on' : ''} onClick={() => { tap(); setDay(i) }}>
-                {s.classes.some((c) => c.day === i) && day !== i && <span className="dot" />}
                 <span>{i === today ? 'اليوم' : d}</span><b>{dates[i].getDate()}</b>
+                <small className="dc">{dayCount(i) ? `${dayCount(i)} محاضرة` : 'فارغ'}</small>
               </button>
             ))}
           </div>
-          <div className="stack stagger" key={day}>
-            {list.map((c) => {
-              const live = day === today && toMin(c.start) <= cur && toMin(c.end) > cur
-              const past = day === today && toMin(c.end) <= cur
-              return (
-                <button key={c.id} className={`cls ${live ? 'now' : ''} ${past ? 'past' : ''}`} style={{ '--h': courseHue(c.course) }} onClick={() => setEdit({ kind: 'class', item: c })}>
-                  <div className="tm"><b>{fmtTime(c.start).split(' ')[0]}</b>{fmtTime(c.start).split(' ')[1]}</div>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div className="t">{c.title || courseName(c.course)} {live && <span className="pill ok" style={{ marginInlineStart: 4 }}>هسه</span>}</div>
-                    <div className="m">
-                      <span><I n="clock" size={13} />{fmtTime(c.start)} - {fmtTime(c.end)}</span>
-                      {c.room && <span><I n="pin" size={13} />{c.room}</span>}
-                      <span>{c.kind}</span>
-                      {c.prof && <span><I n="user" size={13} />{c.prof}</span>}
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
+          <div className="card" style={{ padding: '10px 10px 6px' }} key={day}>
+            {dayCount(day) ? <DayLine day={day} now={now} onOpen={openClass} />
+              : <Empty e="week" t={`ماكو محاضرات يوم ${DAYS[day]}`}><button className="btn soft sm" style={{ marginTop: 12 }} onClick={() => setEdit({ kind: 'class', isNew: true })}><I n="plus" size={17} />أضف محاضرة</button></Empty>}
           </div>
-          {!list.length && (
-            <Empty e="week" t={s.classes.length ? `ما عندك محاضرات يوم ${DAYS[day]}` : 'جدولك فارغ. أضف محاضراتك مرة وحدة وتبقى لكل الفصل.'}>
-              <button className="btn soft sm" style={{ marginTop: 12 }} onClick={() => setEdit({ kind: 'class', isNew: true })}><I n="plus" size={17} />أضف محاضرة</button>
-            </Empty>
-          )}
+          {ttImported && tt.note && <div className="small muted" style={{ margin: '10px 4px 0', display: 'flex', gap: 5, alignItems: 'center' }}><I n="info" size={14} />{tt.note}</div>}
         </>
-      ) : (
+      )}
+
+      {tab === 'tasks' && (
         <>
           <div className="chips" style={{ marginBottom: 12 }}>
             <button className={`chip ${!showDone ? 'on' : ''}`} onClick={() => setShowDone(false)}>القادمة</button>
@@ -224,12 +251,9 @@ export default function Schedule({ nav, tab: tab0 }) {
         </>
       )}
 
-      <div className="demo" style={{ marginTop: 16 }}><I n="info" size={18} style={{ color: 'var(--mid)', marginTop: 1 }} /><span>بعد ربط الخادم، ممثل شعبتك هو اللي ينزل الجدول والمواعيد، وتوصلك مباشرة. هسه تقدر تكتبها بنفسك.</span></div>
-
-      <button className="fab" aria-label="إضافة" onClick={() => { tap(); setEdit({ kind: tab === 'classes' ? 'class' : 'task', isNew: true }) }}><I n="plus" size={26} /></button>
-
-      <Sheet open={!!edit} onClose={() => setEdit(null)} title={edit?.kind === 'class' ? (edit.isNew ? 'محاضرة جديدة' : 'تعديل المحاضرة') : edit?.isNew ? 'كوز أو تسليم جديد' : 'تعديل الموعد'}>
-        {edit?.kind === 'class' && <ClassForm init={edit.isNew ? null : edit.item} defDay={day} key={edit.item?.id || 'new' + day} profile={s.profile} onDone={() => setEdit(null)} />}
+      <Sheet open={!!edit} onClose={() => setEdit(null)} title={edit?.kind === 'info' ? 'المحاضرة' : edit?.kind === 'class' ? (edit.isNew ? 'محاضرة جديدة' : 'تعديل المحاضرة') : edit?.isNew ? 'كوز أو تسليم جديد' : 'تعديل الموعد'}>
+        {edit?.kind === 'info' && <ClassInfo c={edit.item} nav={nav} onClose={() => setEdit(null)} onEdit={() => setEdit({ kind: 'class', item: edit.item })} />}
+        {edit?.kind === 'class' && <ClassForm init={edit.isNew ? null : edit.item} defDay={tab === 'week' ? day : Math.min(today, 5)} key={edit.item?.id || 'new' + day} profile={s.profile} onDone={() => setEdit(null)} />}
         {edit?.kind === 'task' && <TaskForm init={edit.isNew ? null : edit.item} key={edit.item?.id || 'newt'} profile={s.profile} onDone={() => setEdit(null)} />}
       </Sheet>
     </div>

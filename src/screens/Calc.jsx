@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useStore, setState } from '../lib/store'
-import { coursesFor } from '../data/catalog'
+import { semCourses } from '../data/catalog'
 import { calc, STATUS_TEXT, RULES } from '../lib/grade'
 import { exportGrades } from '../lib/excel'
 import { label } from '../lib/profile'
-import { I, HUES } from '../components/icons'
+import { I } from '../components/icons'
 import { Bar, PrintFrame, tap, useToast } from '../components/ui'
 
 function Slider({ name, value, max, onChange }) {
@@ -16,24 +16,43 @@ function Slider({ name, value, max, onChange }) {
   )
 }
 
+function GradeCard({ c, g, abs, onSet, nav }) {
+  const has = g.saee != null && g.saee !== ''
+  const r = has ? calc({ saee: g.saee, mid: g.mid }) : null
+  const tone = r ? STATUS_TEXT[r.status].tone : null
+  const bad = r && (r.status === 'blocked' || r.status === 'impossible')
+  return (
+    <div className={`gcard ${tone ? 't-' + tone : ''}`} style={{ '--c': tone ? `var(--${tone})` : 'var(--ln)' }}>
+      <button className="gh" onClick={() => nav('course', { id: c.id })}>
+        <span className="t">{c.name}{c.carried && <span className="tg w" style={{ marginInlineStart: 6 }}>محمّلة</span>}</span>
+        <I n="chev" size={16} className="chev" />
+      </button>
+      <div className="gb">
+        <label><span>السعي /40</span><input className="input" inputMode="decimal" placeholder="—" value={g.saee ?? ''} onChange={(e) => onSet('saee', e.target.value.replace(/[^\d.]/g, '').slice(0, 4))} /></label>
+        <label><span>المد /10</span><input className="input" inputMode="decimal" placeholder="—" value={g.mid ?? ''} onChange={(e) => onSet('mid', e.target.value.replace(/[^\d.]/g, '').slice(0, 4))} /></label>
+        <div className="gr">
+          {r ? <><b>{bad ? '!' : r.need}</b><span>{r.status === 'blocked' ? 'سعي أقل من 14' : r.need === 0 ? 'ناجح قبل النهائي' : 'تحتاج بالنهائي'}</span></> : <span className="muted">اكتب سعيك</span>}
+        </div>
+      </div>
+      {abs > 0 && <div className="small muted" style={{ padding: '0 14px 10px' }}>{abs} غياب مسجّل</div>}
+    </div>
+  )
+}
+
 export default function Calc({ back, nav }) {
-  const { profile, grades, absences } = useStore()
+  const { profile, grades, absences, plan } = useStore()
   const toast = useToast()
   const [round, setRound] = useState(1)
+  const [quick, setQuick] = useState(false)
   const [q, setQ] = useState({ saee: 22, mid: 6 })
   const r = calc({ ...q, round })
   const st = STATUS_TEXT[r.status]
-  const courses = coursesFor(profile)
-  // ترتيب المواد من الأخطر للأسلم حسب الدرجات المكتوبة
+  const courses = [...semCourses(profile, plan, 1), ...semCourses(profile, plan, 2)]
   const RISK = { blocked: 0, impossible: 0, hard: 1, work: 2, easy: 3, safe: 4 }
-  const status = courses.map((c) => {
-    const g = grades[c.id] || {}
-    const has = g.saee != null && g.saee !== ''
-    return { c, has, r: has ? calc({ saee: g.saee, mid: g.mid }) : null, abs: absences[c.id] || 0 }
-  }).sort((a, b) => (a.has ? RISK[a.r.status] : 9) - (b.has ? RISK[b.r.status] : 9))
-  const risky = status.filter((x) => x.has && RISK[x.r.status] <= 1).length
-  const safe = status.filter((x) => x.has && RISK[x.r.status] >= 3).length
-  const empty = status.filter((x) => !x.has).length
+  const rs = courses.map((c) => { const g = grades[c.id] || {}; return g.saee != null && g.saee !== '' ? RISK[calc({ saee: g.saee, mid: g.mid }).status] : null })
+  const risky = rs.filter((x) => x != null && x <= 1).length
+  const safe = rs.filter((x) => x != null && x >= 3).length
+  const empty = rs.filter((x) => x == null).length
   const setG = (id, k, v) => setState((s) => ({ grades: { ...s.grades, [id]: { ...(s.grades[id] || {}), [k]: v } } }))
 
   async function xls() {
@@ -46,74 +65,52 @@ export default function Calc({ back, nav }) {
   return (
     <div className="screen">
       <PrintFrame title="درجاتي وحاسبة السعي" />
-      <Bar title="وضعي بالمواد" sub="شوف المواد اللي تحتاج تركيز، وشكد تحتاج بكل نهائي" onBack={back} />
+      <Bar title="وضعي بالمواد" sub="اكتب سعيك ومدّك، ونگلك شكد تحتاج بالنهائي" onBack={back} />
 
-      <div className="stat" style={{ marginBottom: 12 }}>
+      <div className="stat" style={{ marginBottom: 14 }}>
         <div><b style={{ color: 'var(--bad)' }}>{risky}</b>تحتاج تركيز</div>
         <div><b style={{ color: 'var(--good)' }}>{safe}</b>بأمان</div>
         <div><b>{empty}</b>بدون درجات</div>
       </div>
-      <div className="stack stagger">
-        {status.filter((x) => x.has).map(({ c, r, abs }) => {
-          const tone = STATUS_TEXT[r.status].tone
-          const pct = r.status === 'blocked' || r.status === 'impossible' ? 100 : Math.round((r.need / 50) * 100)
-          return (
-            <button key={c.id} className="row" onClick={() => nav('course', { id: c.id })}>
-              <div className="ring" style={{ '--p': r.status === 'blocked' || r.status === 'impossible' ? 100 : 100 - pct, '--c': `var(--${tone})`, width: 48, height: 48 }}><span style={{ width: 38, height: 38, fontSize: 13 }}>{r.status === 'blocked' ? '!' : r.need}</span></div>
-              <div style={{ minWidth: 0 }}><div className="t">{c.name}</div><div className={`m tone-${tone}`}>{r.status === 'blocked' ? 'سعيك أقل من 14' : r.need === 0 ? 'ناجح قبل النهائي' : `تحتاج ${r.need} بالنهائي`}{abs ? <span className="muted"> · {abs} غياب</span> : null}</div></div>
-              <I n="chev" size={18} className="chev" />
-            </button>
-          )
-        })}
-      </div>
-      {empty > 0 && <p className="small muted" style={{ margin: '10px 4px 0' }}>اكتب سعي ومد كل مادة تحت، أو من صفحة المادة نفسها. بعد ربط الخادم الدرجات تنزل تلقائياً من الدكتور أو الممثل.</p>}
 
-      <div className="sec">حاسبة سريعة</div>
-      <div className="tabs no-print">
-        <button className={round === 1 ? 'on' : ''} onClick={() => setRound(1)}>الدور الأول</button>
-        <button className={round === 2 ? 'on' : ''} onClick={() => setRound(2)}>الدور الثاني</button>
-      </div>
-
-      <div className="card no-print">
-        <Slider name="السعي" value={q.saee} max={RULES.saeeMax} onChange={(v) => setQ({ ...q, saee: v })} />
-        <Slider name="المد" value={q.mid} max={RULES.midMax} onChange={(v) => setQ({ ...q, mid: v })} />
-        <div className="meter" style={{ margin: '6px 0 16px' }}><i style={{ width: `${(r.before / 50) * 100}%` }} /></div>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
-          <div>
-            <div className="small muted">تحتاج بالنهائي</div>
-            <div className={`big tone-${st.tone}`}>{r.status === 'blocked' ? '—' : r.need}<span style={{ fontSize: 18, color: 'var(--mu)' }}> / 50</span></div>
+      {[1, 2].map((sm) => {
+        const cs = courses.filter((c) => c.sem === sm)
+        if (!cs.length) return null
+        return (
+          <div key={sm}>
+            <div className="sec">الفصل {sm === 1 ? 'الأول' : 'الثاني'}</div>
+            <div className="stack">{cs.map((c) => <GradeCard key={c.id} c={c} g={grades[c.id] || {}} abs={absences[c.id] || 0} nav={nav} onSet={(k, v) => setG(c.id, k, v)} />)}</div>
           </div>
-          <div className="small muted" style={{ textAlign: 'left' }}>{round === 2 ? 'السعي + المد' : 'قبل النهائي'}<br /><b style={{ color: 'var(--tx)', fontSize: 16 }}>{r.before} / 50</b></div>
-        </div>
-        <div className={`small tone-${st.tone}`} style={{ marginTop: 10, fontWeight: 600 }}>{st.t}</div>
-        {round === 2 && <div className="small muted" style={{ marginTop: 6 }}>بالدور الثاني درجة المد تنضم للسعي فيصير من 50، وما يطبق حد الـ14.</div>}
-      </div>
+        )
+      })}
+      <p className="small muted" style={{ margin: '10px 4px 0' }}>النجاح 50 من 100: سعي 40 + مد 10 + نهائي 50، ولازم سعيك 14 أو أكثر حتى تدخل النهائي. لما الدكتور أو الممثل يرفع الدرجات تنملي هنا وحدها.</p>
 
-      <div className="sec">درجاتي بكل مادة</div>
-      <div className="stack">
-        {courses.map((c) => {
-          const g = grades[c.id] || {}
-          const rr = calc({ saee: g.saee, mid: g.mid })
-          const has = g.saee != null && g.saee !== ''
-          return (
-            <div key={c.id} className="card" style={{ padding: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
-                <b style={{ fontSize: 14 }}>{c.name}</b>
-                {has && <span className={`pill ${rr.status === 'blocked' || rr.status === 'impossible' ? 'urgent' : ''}`}>{rr.status === 'blocked' ? 'أقل من 14' : `تحتاج ${rr.need}`}</span>}
-              </div>
-              <div className="grid2" style={{ marginTop: 8 }}>
-                <input className="input" inputMode="decimal" placeholder="السعي /40" value={g.saee ?? ''} onChange={(e) => setG(c.id, 'saee', e.target.value.replace(/[^\d.]/g, '').slice(0, 4))} />
-                <input className="input" inputMode="decimal" placeholder="المد /10" value={g.mid ?? ''} onChange={(e) => setG(c.id, 'mid', e.target.value.replace(/[^\d.]/g, '').slice(0, 4))} />
-              </div>
+      <button className="linkrow no-print" onClick={() => { tap(); setQuick(!quick) }}><I n="calc" size={17} />{quick ? 'إخفاء الحاسبة السريعة' : 'حاسبة سريعة: جرّب أرقام بدون ما تحفظها'}</button>
+      {quick && (
+        <div className="card no-print" style={{ animation: 'up .35s var(--ease)' }}>
+          <div className="seg">
+            <button className={round === 1 ? 'on' : ''} onClick={() => setRound(1)}>الدور الأول</button>
+            <button className={round === 2 ? 'on' : ''} onClick={() => setRound(2)}>الدور الثاني</button>
+          </div>
+          <Slider name="السعي" value={q.saee} max={RULES.saeeMax} onChange={(v) => setQ({ ...q, saee: v })} />
+          <Slider name="المد" value={q.mid} max={RULES.midMax} onChange={(v) => setQ({ ...q, mid: v })} />
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
+            <div>
+              <div className="small muted">تحتاج بالنهائي</div>
+              <div className={`big tone-${st.tone}`}>{r.status === 'blocked' ? '—' : r.need}<span style={{ fontSize: 18, color: 'var(--mu)' }}> / 50</span></div>
             </div>
-          )
-        })}
-      </div>
+            <div className="small muted" style={{ textAlign: 'left' }}>{round === 2 ? 'السعي + المد' : 'قبل النهائي'}<br /><b style={{ color: 'var(--tx)', fontSize: 16 }}>{r.before} / 50</b></div>
+          </div>
+          <div className={`small tone-${st.tone}`} style={{ marginTop: 10, fontWeight: 600 }}>{st.t}</div>
+          {round === 2 && <div className="small muted" style={{ marginTop: 6 }}>بالدور الثاني درجة المد تنضم للسعي فيصير من 50، وما يطبق حد الـ14.</div>}
+        </div>
+      )}
+
       <div className="grid2 no-print" style={{ marginTop: 14 }}>
         <button className="btn soft" onClick={xls}><I n="sheet" size={19} />تصدير إكسل</button>
         <button className="btn soft" onClick={() => { tap(); print() }}><I n="print" size={19} />طباعة / PDF</button>
       </div>
-      <p className="small muted center">درجاتك تنحفظ على جهازك تلقائياً، وما يشوفها أحد غيرك.</p>
+      <p className="small muted center">درجاتك تنحفظ على جهازك، وما يشوفها أحد غيرك.</p>
     </div>
   )
 }

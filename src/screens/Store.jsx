@@ -91,104 +91,83 @@ function ProductForm({ init, onDone }) {
 export default function Store({ back }) {
   const s = useStore()
   const a = useAcct()
-  const toast = useToast()
   const admin = isStaff(a)
   const [c, setC] = useState('all')
   const [mine, setMine] = useState(true)
   const [edit, setEdit] = useState(null)
   const [view, setView] = useState(null)
-  const [cartOpen, setCartOpen] = useState(false)
+  const [qty, setQty] = useState(1)
   useEffect(() => { loadProducts().catch(() => {}) }, [])
 
   const all = s.products?.length ? s.products : SAMPLE
   const demo = !s.products?.length
   const list = useMemo(() => all.filter((p) => (c === 'all' || p.category === c) && (!mine || !p.stages?.length || p.stages.includes(s.profile.stage))), [all, c, mine, s.profile.stage])
-  const cart = s.cart || {}
-  const items = Object.entries(cart).map(([id, q]) => ({ p: all.find((x) => String(x.id) === id), q })).filter((x) => x.p)
-  const total = items.reduce((t, x) => t + x.p.price * x.q, 0)
-  const setQ = (id, q) => setState((st) => { const n = { ...(st.cart || {}) }; if (q > 0) n[id] = q; else delete n[id]; return { cart: n } })
+  const used = new Set(all.map((p) => p.category))
+  const open = (p) => { tap(); setQty(1); setView(p) }
 
-  function order(list) {
+  // طلب مباشر: منتج واحد بالكمية اللي يختارها الطالب، ورسالة جاهزة بالواتساب
+  function order(p, q) {
     tap()
-    const lines = list.map((x) => `• ${x.p.name} × ${x.q} = ${iqd(x.p.price * x.q)}`)
-    const sum = list.reduce((t, x) => t + x.p.price * x.q, 0)
-    const msg = `مرحباً، أريد أطلب من متجر تطبيق المدني:\n${lines.join('\n')}\nالمجموع: ${iqd(sum)}\n\nالاسم: ${s.profile.name || ''}\n${label(s.profile)}`
+    const msg = `مرحباً، أريد أطلب من متجر تطبيق المدني:\n• ${p.name} × ${q} = ${iqd(p.price * q)}\n\nالاسم: ${s.profile.name || ''}\n${label(s.profile)}`
     window.open(`https://wa.me/${DEV.intl}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener')
   }
 
   return (
     <div className="screen">
-      <Bar title="متجر المدني" sub="تجهيزات الطالب، والطلب مباشرة على الواتساب" onBack={back}
-        end={<button className="iconbtn" onClick={() => setCartOpen(true)} aria-label="السلة" style={{ position: 'relative' }}><I n="bag" size={20} />{items.length > 0 && <span className="badge">{items.reduce((t, x) => t + x.q, 0)}</span>}</button>} />
+      <Bar title="متجر المدني" sub="اختار المنتج واطلبه بالواتساب مباشرة" onBack={back}
+        end={admin ? <button className="iconbtn ac" onClick={() => setEdit({})} aria-label="أضف منتج"><I n="plus" size={20} /></button> : null} />
 
+      <div className="howto">
+        <span><b>1</b>اختار المنتج</span><I n="chev" size={14} /><span><b>2</b>حدد الكمية</span><I n="chev" size={14} /><span><b>3</b>اطلب بالواتساب</span>
+      </div>
       {demo && <div className="demo"><I n="info" size={18} style={{ color: 'var(--mid)', marginTop: 1 }} /><span>هذي منتجات مثال حتى يبين الشكل. المنتجات الحقيقية وأسعارها يضيفها المطوّر.</span></div>}
-      {admin && <button className="btn ac full" style={{ marginBottom: 12 }} onClick={() => setEdit({})}><I n="plus" size={19} />أضف منتج</button>}
 
-      <div className="days" style={{ marginBottom: 8 }}>
-        <button className={c === 'all' ? 'on' : ''} onClick={() => setC('all')} style={{ minWidth: 64 }}><b style={{ fontSize: 13 }}>الكل</b></button>
-        {STORE_CATS.map((x) => <button key={x.id} className={c === x.id ? 'on' : ''} onClick={() => { tap(); setC(x.id) }} style={{ minWidth: 86 }}><I n={x.i} size={18} /><span style={{ whiteSpace: 'nowrap' }}>{x.n}</span></button>)}
+      <div className="chiprow">
+        <button className={`chip ${c === 'all' ? 'on' : ''}`} onClick={() => { tap(); setC('all') }}>الكل</button>
+        {STORE_CATS.filter((x) => used.has(x.id) || admin).map((x) => <button key={x.id} className={`chip ${c === x.id ? 'on' : ''}`} onClick={() => { tap(); setC(x.id) }}><I n={x.i} size={15} />{x.n}</button>)}
       </div>
-      <div className="chips" style={{ marginBottom: 12 }}>
-        <button className={`chip ${mine ? 'on' : ''}`} onClick={() => setMine(true)}>لمرحلتي</button>
-        <button className={`chip ${!mine ? 'on' : ''}`} onClick={() => setMine(false)}>كل المراحل</button>
-      </div>
+      <label className="switchrow">
+        <span>اعرض بس اللي يناسب مرحلتي</span>
+        <input type="checkbox" className="sw" checked={mine} onChange={(e) => { tap(); setMine(e.target.checked) }} />
+      </label>
 
       <div className="shop stagger">
         {list.map((p) => {
           const k = cat(p.category)
+          const oos = p.in_stock === false
           return (
-            <div key={p.id} className="prod" style={{ '--h': k.h }}>
-              <button className="ph" onClick={() => setView(p)} aria-label={p.name}>
+            <button key={p.id} className={`prod ${oos ? 'oosc' : ''}`} style={{ '--h': k.h }} onClick={() => (admin && !p.example ? setEdit(p) : open(p))}>
+              <span className="ph">
                 {p.image_url ? <img src={p.image_url} alt="" loading="lazy" /> : <I n={k.i} size={40} />}
-                {!p.in_stock && p.in_stock !== undefined && <span className="pill off oos">نفد</span>}
+                {oos && <span className="pill off oos">نفد</span>}
                 {p.example && <span className="pill gold oos">مثال</span>}
-              </button>
-              <div className="nm">{p.name}</div>
-              <div className="pr">{iqd(p.price)}{p.old_price ? <s>{iqd(p.old_price)}</s> : null}</div>
-              {admin && !p.example
-                ? <button className="btn soft sm" onClick={() => setEdit(p)}><I n="pencil" size={16} />تعديل</button>
-                : cart[p.id]
-                  ? <div className="stepper" style={{ justifyContent: 'space-between' }}><button onClick={() => setQ(p.id, cart[p.id] - 1)} aria-label="نقص"><I n="minus" size={16} /></button><b style={{ fontSize: 18 }}>{cart[p.id]}</b><button onClick={() => setQ(p.id, cart[p.id] + 1)} aria-label="زيد"><I n="plus" size={16} /></button></div>
-                  : <button className="btn ac sm" disabled={p.in_stock === false} onClick={() => { tap(); setQ(p.id, 1); toast('انضاف للسلة') }}><I n="plus" size={16} />أضف للسلة</button>}
-            </div>
+                {p.old_price ? <span className="pill urgent disc">خصم</span> : null}
+              </span>
+              <span className="nm">{p.name}</span>
+              <span className="pr">{iqd(p.price)}{p.old_price ? <s>{iqd(p.old_price)}</s> : null}</span>
+              {admin && !p.example && <span className="small muted" style={{ display: 'flex', gap: 4, alignItems: 'center' }}><I n="pencil" size={13} />اضغط للتعديل</span>}
+            </button>
           )
         })}
       </div>
       {!list.length && <Empty e="bag" t="ماكو منتجات بهذا القسم حالياً" />}
 
-      {items.length > 0 && (
-        <button className="btn ac full cartbar" onClick={() => setCartOpen(true)}><I n="bag" size={19} />السلة · {iqd(total)}</button>
-      )}
-
-      <Sheet open={cartOpen} onClose={() => setCartOpen(false)} title="سلتي">
-        {items.length ? (
-          <>
-            <div className="stack">
-              {items.map(({ p, q }) => (
-                <div key={p.id} className="row" style={{ cursor: 'default' }}>
-                  <div style={{ minWidth: 0, flex: 1 }}><div className="t">{p.name}</div><div className="m">{iqd(p.price)} × {q}</div></div>
-                  <div className="stepper"><button onClick={() => setQ(p.id, q - 1)} aria-label="نقص"><I n="minus" size={16} /></button><b style={{ fontSize: 18 }}>{q}</b><button onClick={() => setQ(p.id, q + 1)} aria-label="زيد"><I n="plus" size={16} /></button></div>
-                </div>
-              ))}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '14px 4px', fontWeight: 600 }}><span>المجموع</span><span>{iqd(total)}</span></div>
-            <button className="btn ac full" onClick={() => order(items)}><I n="whatsapp" size={19} />اطلب على الواتساب</button>
-            <p className="small muted center">ينفتح الواتساب برسالة جاهزة بطلبك إلى {DEV.phone}. التوصيل والدفع يتفق عليه هناك.</p>
-          </>
-        ) : <Empty e="bag" t="سلتك فارغة" />}
-      </Sheet>
-
       <Sheet open={!!view} onClose={() => setView(null)} title={view?.name}>
         {view && (
           <>
-            {view.image_url && <img src={view.image_url} alt="" style={{ width: '100%', borderRadius: 16, marginBottom: 12 }} />}
+            <div className="pview" style={{ '--h': cat(view.category).h }}>{view.image_url ? <img src={view.image_url} alt="" /> : <I n={cat(view.category).i} size={64} />}</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
               <span className="pill">{cat(view.category).n}</span>
               <span className="pill gold">{view.stages?.length ? 'المرحلة ' + view.stages.map((x) => ['', 'الأولى', 'الثانية', 'الثالثة', 'الرابعة'][x]).join(' و') : 'لكل المراحل'}</span>
+              {view.in_stock === false && <span className="pill off">نفد حالياً</span>}
             </div>
-            <div className="big" style={{ fontSize: 28 }}>{iqd(view.price)}</div>
-            {view.description && <p style={{ whiteSpace: 'pre-wrap', color: 'var(--mu)' }}>{view.description}</p>}
-            <button className="btn ac full" style={{ marginTop: 12 }} disabled={view.in_stock === false} onClick={() => order([{ p: view, q: 1 }])}><I n="whatsapp" size={19} />اطلبه الآن على الواتساب</button>
+            {view.description && <p style={{ whiteSpace: 'pre-wrap', color: 'var(--mu)', marginTop: 0 }}>{view.description}</p>}
+            <div className="buybox">
+              <div className="stepper"><button onClick={() => { tap(); setQty(Math.max(1, qty - 1)) }} aria-label="نقص"><I n="minus" size={16} /></button><b>{qty}</b><button onClick={() => { tap(); setQty(qty + 1) }} aria-label="زيد"><I n="plus" size={16} /></button></div>
+              <div style={{ textAlign: 'left' }}><div className="small muted">المجموع</div><div className="big" style={{ fontSize: 24 }}>{iqd(view.price * qty)}</div></div>
+            </div>
+            <button className="btn wa full" disabled={view.in_stock === false} onClick={() => order(view, qty)}><I n="whatsapp" size={19} />اطلب بالواتساب</button>
+            <p className="small muted center">ينفتح الواتساب برسالة جاهزة بطلبك إلى {DEV.phone}. التوصيل والدفع يتفق عليه هناك.</p>
           </>
         )}
       </Sheet>

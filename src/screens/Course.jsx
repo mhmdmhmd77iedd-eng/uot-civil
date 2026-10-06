@@ -7,7 +7,7 @@ import { Bar, Empty, Sheet, tap, useToast } from '../components/ui'
 import { calc, STATUS_TEXT } from '../lib/grade'
 import { isOfficial } from '../lib/files'
 import { TaskRow } from './Schedule'
-import { upcomingTasks } from '../lib/schedule'
+import { upcomingTasks, DAYS, fmtTime, toMin, dateLong } from '../lib/schedule'
 import { saveOffline, offlineBlob, offlineCount } from '../lib/sb'
 import { useEffect } from 'react'
 
@@ -35,6 +35,8 @@ export default function Course({ id, type: type0, nav, back }) {
   const setAbs = (n) => { tap(); setState((x) => ({ absences: { ...x.absences, [id]: Math.max(0, n) } })) }
   const lim = s.absenceLimit
   const myTasks = upcomingTasks(s.tasks).filter((t) => t.course === id)
+  const cls = s.classes.filter((x) => x.course === id).sort((a, b) => a.day - b.day || toMin(a.start) - toMin(b.start))
+  const exam = (s.srvExams || []).filter((e) => e.course_id === id && new Date(e.starts_at) > new Date()).sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at))[0]
   const storedFiles = all.filter((f) => f.stored)
   const [off, setOff] = useState(null)
   const [dl, setDl] = useState(false)
@@ -57,7 +59,13 @@ export default function Course({ id, type: type0, nav, back }) {
 
   return (
     <div className="screen">
-      <Bar title={c.name} sub={`${c.en} · ${c.code.includes('-') ? 'مادة فرع' : c.code} · ${c.ects} وحدات`} onBack={back} />
+      <Bar title={c.name} sub={`${c.en} · ${c.code.includes('-') ? 'مادة فرع' : c.code}`} onBack={back} />
+
+      <div className="facts">
+        <div><span>الوحدات</span><b>{c.ects}</b></div>
+        <button onClick={() => { tap(); nav('schedule', { tab: 'week' }) }}><span>المحاضرات</span><b>{cls.length ? cls.map((x) => `${DAYS[x.day]} ${fmtTime(x.start)}`).join('، ') : 'أضفها بجدولي'}</b></button>
+        <button onClick={() => { tap(); nav('exams') }}><span>الامتحان</span><b>{exam ? dateLong(new Date(exam.starts_at)) : 'ما منشور بعد'}</b></button>
+      </div>
 
       {(examRules || s.admin) && (
         <div className="card" style={{ marginBottom: 12, borderInlineStart: '4px solid var(--gold)' }}>

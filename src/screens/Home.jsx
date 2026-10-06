@@ -1,63 +1,59 @@
-import { useEffect, useState } from 'react'
 import { useStore } from '../lib/store'
-import { coursesFor, courseById } from '../data/catalog'
-import { DEFAULT_ANNOUNCEMENTS, DEFAULT_EXAMS } from '../data/content'
+import { semCourses, courseById } from '../data/catalog'
 import { ViewAs } from '../components/ViewAs'
 import { label, greeting, currentSemester } from '../lib/profile'
 import { tap } from '../components/ui'
 import { I, HUES, Bridge } from '../components/icons'
 import { InstallCard } from '../components/Install'
 import { QuoteOfDay } from './Quotes'
-import { nextClass, upcomingTasks, taskType, dueText, fmtTime, courseName, DAYS, weekSummary, daysLeft, dayIdx } from '../lib/schedule'
+import { TaskRow } from './Schedule'
+import { CourseRow } from '../components/CourseRow'
+import { TodayCard, useMinute } from '../components/Today'
+import { BOARDS, boardOf } from './News'
+import { courseHue, initial } from '../lib/look'
+import { useAcct, isStaff } from '../lib/sb'
+import { nextClass, upcomingTasks, fmtTime, courseName, DAYS, ago, dateLong } from '../lib/schedule'
 
-function useNow() {
-  const [n, setN] = useState(Date.now())
-  useEffect(() => { const t = setInterval(() => setN(Date.now()), 30000); return () => clearInterval(t) }, [])
-  return n
-}
-
-const HUE_LIST = Object.values(HUES)
-export const courseHue = (id) => HUE_LIST[[...id].reduce((a, c) => a + c.charCodeAt(0), 0) % HUE_LIST.length]
-export const initial = (name) => name.replace(/^ال/, '').trim()[0]
+export { courseHue, initial }
 
 export default function Home({ nav }) {
   const s = useStore()
+  const a = useAcct()
   const p = s.profile
-  const now = useNow()
-  // الامتحان القادم: من جدول المشرف أو من امتحانات الطالب بجدولي
+  const nowD = useMinute()
+  const now = nowD.getTime()
+  // الامتحان القادم: من جدول الامتحانات المنشور أو امتحانات كتبها الطالب بجدولي
   const fromTasks = s.tasks.filter((t) => t.type === 'exam' && !t.done).map((t) => ({ course: t.course, title: t.title, kind: 'امتحان', date: `${t.due}T${t.time || '08:30'}` }))
-  const exams = [...(s.exams ?? DEFAULT_EXAMS).filter((e) => e.stage === p.stage), ...fromTasks].filter((e) => new Date(e.date).getTime() > now).sort((a, b) => new Date(a.date) - new Date(b.date))
+  const fromSrv = (s.srvExams || []).map((e) => ({ course: e.course_id, kind: e.kind, date: e.starts_at, room: e.room }))
+  const exams = [...fromSrv, ...fromTasks].filter((e) => new Date(e.date).getTime() > now).sort((x, y) => new Date(x.date) - new Date(y.date))
   const next = exams[0]
-  const examMode = next && new Date(next.date).getTime() - now < 7 * 864e5
-  const anns = (s.announcements ?? DEFAULT_ANNOUNCEMENTS).filter((a) => !a.stage || a.stage === p.stage).slice(0, 2)
+  const days = next ? (new Date(next.date).getTime() - now) / 864e5 : 99
+  const showExam = next && days < 14
+  const examMode = next && days < 7
+  const anns = [...(s.srvAnns || [])].sort((x, y) => (!!s.seenAnns?.['srv' + x.id] - !!s.seenAnns?.['srv' + y.id]) || (new Date(y.created_at) - new Date(x.created_at))).slice(0, 2)
   const sem = currentSemester()
-  const mine = coursesFor(p).filter((c) => c.sem === sem)
-  const pending = s.requests.filter((r) => r.mine && !r.done).length
+  const mine = semCourses(p, s.plan, sem)
+  const units = mine.reduce((t, c) => t + c.ects, 0)
   const g = greeting()
-  const nc = nextClass(s.classes, new Date(now))
-  const up = upcomingTasks(s.tasks, new Date(now)).slice(0, 4)
-  const wk = weekSummary(s, new Date(now))
-  const weekStart = [6, 0, 1].includes(dayIdx(new Date(now))) // الجمعة والسبت والأحد: ملخص بداية الأسبوع
+  const nc = nextClass(s.classes, nowD)
+  const up = upcomingTasks(s.tasks, nowD)
 
   let cd = null
-  if (next) {
+  if (showExam) {
     const d = Math.max(0, new Date(next.date).getTime() - now)
     cd = { d: Math.floor(d / 864e5), h: Math.floor((d % 864e5) / 36e5), m: Math.floor((d % 36e5) / 6e4) }
   }
 
   const tiles = [
-    { i: 'week', h: HUES.ocean, t: 'جدولي', go: 'schedule' },
-    { i: 'books', h: HUES.teal, t: 'المكتبة', go: 'library' },
+    { i: 'calendar', h: HUES.sage, t: 'الامتحانات', go: 'exams' },
     { i: 'target', h: HUES.rose, t: 'وضعي بالمواد', go: 'calc' },
     { i: 'route', h: HUES.indigo, t: 'خريطة موادي', go: 'map' },
+    { i: 'sheet', h: HUES.ocean, t: 'خطة الوحدات', go: 'map', p: { tab: 'plan' } },
     { i: 'ask', h: HUES.clay, t: 'الطلبات', go: 'requests' },
-    { i: 'calendar', h: HUES.sage, t: 'الامتحانات', go: 'exams' },
     { i: 'bag', h: HUES.amber, t: 'المتجر', go: 'store' },
     { i: 'quote', h: HUES.plum, t: 'اقتباسات', go: 'quotes' },
-    { i: 'megaphone', h: HUES.rose, t: 'الإعلانات', go: 'news' },
-    { i: 'sheet', h: HUES.sage, t: 'خطة الوحدات', go: 'map', p: { tab: 'plan' } },
     { i: 'cap', h: HUES.bronze, t: 'دليل بولونيا', go: 'bologna' },
-    { i: 'hardhat', h: HUES.clay, t: 'المطوّر', go: 'developer' },
+    ...(isStaff(a) ? [{ i: 'shield', h: HUES.teal, t: 'لوحة المطوّر', go: 'devpanel' }] : [{ i: 'hardhat', h: HUES.teal, t: 'المطوّر', go: 'developer' }]),
   ]
 
   return (
@@ -71,21 +67,22 @@ export default function Home({ nav }) {
       </div>
       <ViewAs />
 
-      {next ? (
-        <div className={`hero ${examMode ? 'exam' : ''}`} role="button" style={{ cursor: 'pointer' }} onClick={() => next.course && nav('course', { id: next.course })}>
+      {showExam ? (
+        <div className={`hero ${examMode ? 'exam' : ''}`} role="button" style={{ cursor: 'pointer' }} onClick={() => nav('exams')}>
           <div className="grid" /><Bridge className="deco" />
-          <div className="l">{examMode ? 'وضع الامتحانات' : 'الامتحان القادم'}{next.example ? ' (مثال)' : ''}</div>
-          <div className="s">{courseById[next.course]?.name || next.title} · {next.kind || 'نهائي'}</div>
+          <div className="l">{examMode ? 'وضع الامتحانات' : 'الامتحان القادم'} · {next.kind || 'نهائي'}</div>
+          <div className="s">{courseById[next.course]?.name || next.title}</div>
           <div className="cd"><div><b>{cd.d}</b><span>يوم</span></div><div><b>{String(cd.h).padStart(2, '0')}</b><span>ساعة</span></div><div><b>{String(cd.m).padStart(2, '0')}</b><span>دقيقة</span></div></div>
-          {examMode && next.course && (
-            <div style={{ display: 'flex', gap: 8, marginTop: 14, position: 'relative', zIndex: 1 }}>
-              <button className="btn sm" style={{ background: '#fff', color: '#9a3412' }} onClick={(e) => { e.stopPropagation(); tap(); nav('course', { id: next.course, type: 'past' }) }}><I n="paper" size={17} />الأسئلة السابقة</button>
-              <button className="btn sm" style={{ background: 'rgba(255,255,255,.18)', color: '#fff' }} onClick={(e) => { e.stopPropagation(); tap(); nav('course', { id: next.course }) }}><I n="info" size={17} />التعليمات</button>
+          <div className="hero-sub">{dateLong(new Date(next.date))}{next.room ? ` · قاعة ${next.room}` : ''}</div>
+          {next.course && (
+            <div className="hero-act">
+              <button className="btn sm" style={{ background: '#fff', color: examMode ? '#9a3412' : '#0b6b60' }} onClick={(e) => { e.stopPropagation(); tap(); nav('course', { id: next.course, type: 'past' }) }}><I n="paper" size={17} />الأسئلة السابقة</button>
+              <button className="btn sm" style={{ background: 'rgba(255,255,255,.18)', color: '#fff' }} onClick={(e) => { e.stopPropagation(); tap(); nav('exams') }}><I n="calendar" size={17} />كل الجدول</button>
             </div>
           )}
         </div>
       ) : (
-        <div className="hero" role="button" style={{ cursor: 'pointer' }} onClick={() => nav('schedule')}>
+        <div className="hero" role="button" style={{ cursor: 'pointer' }} onClick={() => (nc?.c.course ? nav('course', { id: nc.c.course }) : nav('schedule'))}>
           <div className="grid" /><Bridge className="deco" />
           <div className="l">{nc ? (nc.live ? 'محاضرتك هسه' : 'محاضرتك الجاية') : 'جدولي'}</div>
           {nc ? (
@@ -100,49 +97,23 @@ export default function Home({ nav }) {
           ) : (
             <>
               <div className="s" style={{ marginBottom: 6 }}>رتّب محاضراتك ومواعيدك</div>
-              <div style={{ fontSize: 13, opacity: .92, maxWidth: '62%' }}>اكتب جدولك مرة وحدة، ونذكّرك بالكوزات والتقارير قبل موعدها بيوم.</div>
+              <div style={{ fontSize: 13, opacity: .92, maxWidth: '62%' }}>جدول شعبتك ينزل من الممثل، أو اكتبه بنفسك، ونذكّرك بالكوزات قبل موعدها بيوم.</div>
             </>
           )}
         </div>
       )}
 
       <InstallCard />
+      <TodayCard nav={nav} />
 
       {up.length > 0 && (
         <>
-          <div className="sec">قريباً عليك <button onClick={() => nav('schedule', { tab: 'tasks' })}>الكل</button></div>
-          <div className="strip">
-            {up.map((t) => {
-              const tt = taskType(t.type), d = dueText(t, new Date(now))
-              const soon = daysLeft(t, new Date(now)) <= 1
-              return (
-                <button key={t.id} className="mini" style={{ '--h': soon ? 'var(--bad)' : tt.h }} onClick={() => nav('schedule', { tab: 'tasks' })}>
-                  <span className="k"><I n={tt.i} size={15} />{tt.n} · {typeof d.b === 'number' ? `باقي ${d.b} ${d.s}` : `${d.b} ${d.s}`}</span>
-                  <span className="t">{t.title}</span>
-                  <span className="m">{courseName(t.course)}</span>
-                </button>
-              )
-            })}
+          <div className="sec">قريباً عليك <button onClick={() => nav('schedule', { tab: 'tasks' })}>الكل ({up.length})</button></div>
+          <div className="stack stagger">
+            {up.slice(0, 3).map((t) => <TaskRow key={t.id} t={t} onEdit={() => nav('schedule', { tab: 'tasks' })} />)}
           </div>
         </>
       )}
-
-      {(s.classes.length > 0 || s.tasks.length > 0) && (
-        <div className="card" style={{ marginTop: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <I n="chart" size={19} style={{ color: 'var(--ac)' }} /><b style={{ fontSize: 14 }}>{weekStart ? 'ملخص أسبوعك الجديد' : 'أسبوعك'}</b>
-          </div>
-          <div className="stat">
-            <div><b>{wk.lectures}</b>محاضرة بالأسبوع</div>
-            <div><b style={{ color: wk.left ? 'var(--mid)' : undefined }}>{wk.left}</b>تسليم باقي</div>
-            <div><b style={{ color: 'var(--good)' }}>{wk.done}</b>خلصتها</div>
-          </div>
-        </div>
-      )}
-
-      <QuoteOfDay nav={nav} />
-
-      <button className="btn ac full" style={{ margin: '16px 0 4px' }} onClick={() => { tap(); nav('library') }}><I n="books" size={20} />افتح موادي</button>
 
       <div className="sec">اختصارات</div>
       <div className="tiles stagger">
@@ -151,30 +122,34 @@ export default function Home({ nav }) {
         ))}
       </div>
 
-      {pending > 0 && (
-        <button className="row" style={{ marginTop: 14, '--h': HUES.clay }} onClick={() => nav('requests')}>
-          <span className="ic"><I n="ask" /></span><div><div className="t">عندك {pending} طلب بانتظار التوفير</div><div className="m">نبلغك أول ما المشرف يرفعه</div></div><I n="chev" size={18} className="chev" />
-        </button>
+      {anns.length > 0 && (
+        <>
+          <div className="sec">آخر الإعلانات <button onClick={() => nav('news')}>الكل</button></div>
+          <div className="stack stagger">
+            {anns.map((x) => {
+              const b = BOARDS.find((y) => y.id === boardOf(x))
+              const isNew = !s.seenAnns?.['srv' + x.id]
+              return (
+                <button key={x.id} className="row" style={{ '--h': x.urgent ? 'var(--bad)' : HUES.plum }} onClick={() => nav('news', { board: b.id })}>
+                  <span className="ic"><I n={x.urgent ? 'bell' : b.i} /></span>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div className="t">{x.title} {isNew && <span className="pill urgent" style={{ fontSize: 10.5 }}>جديد</span>}</div>
+                    <div className="m" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.who} · {ago(x.created_at)}</div>
+                  </div>
+                  <I n="chev" size={18} className="chev" />
+                </button>
+              )
+            })}
+          </div>
+        </>
       )}
 
-      <div className="sec">آخر الإعلانات <button onClick={() => nav('news')}>الكل</button></div>
-      <div className="stack stagger">
-        {anns.map((a) => (
-          <button key={a.id} className="row" style={{ '--h': a.urgent ? 'var(--bad)' : HUES.plum }} onClick={() => nav('news')}>
-            <span className="ic"><I n={a.urgent ? 'bell' : 'megaphone'} /></span>
-            <div style={{ minWidth: 0 }}><div className="t">{a.title}</div><div className="m" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.body}</div></div>
-          </button>
-        ))}
-      </div>
+      <QuoteOfDay nav={nav} />
 
-      <div className="sec">موادك هذا الفصل <button onClick={() => nav('library')}>كل المواد</button></div>
-      <div className="stack stagger">
-        {mine.map((c) => (
-          <button key={c.id} className="row" style={{ '--h': courseHue(c.id) }} onClick={() => nav('course', { id: c.id })}>
-            <span className="ic">{initial(c.name)}</span>
-            <div><div className="t">{c.name}</div><div className="m">{c.en} · {c.ects} وحدات</div></div><I n="chev" size={18} className="chev" />
-          </button>
-        ))}
+      <div className="sec">موادك هذا الفصل <button onClick={() => nav('library')}>المكتبة</button></div>
+      <button className="unitsum" onClick={() => { tap(); nav('map', { tab: 'plan' }) }}><span><b>{units}</b> / 30 وحدة</span><i style={{ width: `${Math.min(100, units / 30 * 100)}%` }} /><span className="muted">{mine.length} مواد · الفصل {sem === 1 ? 'الأول' : 'الثاني'} · عدّل الخطة</span></button>
+      <div className="stack">
+        {mine.map((c, i) => <CourseRow key={c.id} c={c} nav={nav} i={i} />)}
       </div>
     </div>
   )

@@ -1,74 +1,103 @@
-import { useState } from 'react'
-import { useStore, setState } from '../lib/store'
-import { COURSES, courseById, FILE_TYPES } from '../data/catalog'
+import { useEffect, useState } from 'react'
+import { useStore } from '../lib/store'
+import { COURSES, courseById, FILE_TYPES, coursesFor } from '../data/catalog'
+import { useAcct, isStaff, fetchRequests, addRequest, voteRequest, deleteRequest, setRequestDone } from '../lib/sb'
 import { exportRequests } from '../lib/excel'
-import { I, HUES } from '../components/icons'
+import { courseHue } from '../lib/look'
+import { I } from '../components/icons'
 import { Bar, Sheet, Empty, tap, useToast } from '../components/ui'
 
+const typeOf = (id) => FILE_TYPES.find((t) => t.id === id) || FILE_TYPES[0]
+
+// الطلبات مشتركة: كل الطلاب يشوفونها ويصوّتون، والمشرف لما يرفع الملف الطلب يتعلّم «تم التوفير» وحده
 export default function Requests({ course, type, back, nav }) {
-  const { requests, admin, profile } = useStore()
+  const s = useStore()
+  const a = useAcct()
   const toast = useToast()
+  const staff = isStaff(a)
   const [open, setOpen] = useState(!!course)
   const [f, setF] = useState({ course: course || '', type: type || 'past', note: '' })
   const [tab, setTab] = useState('open')
-  const list = requests.filter((r) => (tab === 'open' ? !r.done : r.done)).sort((a, b) => b.votes - a.votes)
+  const [mineOnly, setMineOnly] = useState(false)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => { fetchRequests() }, [a.user?.id])
+  const all = s.srvRequests || []
+  const myStage = new Set(coursesFor(s.profile).map((c) => c.id))
+  const list = all.filter((r) => (tab === 'open' ? !r.done : r.done)).filter((r) => !mineOnly || r.mine || r.own)
+    .sort((x, y) => (myStage.has(y.course) - myStage.has(x.course)) || (y.votes - x.votes))
+  const openN = all.filter((r) => !r.done).length
 
-  function add() {
-    tap()
-    const same = requests.find((r) => !r.done && r.course === f.course && r.type === f.type)
-    if (same) {
-      if (!same.mine) setState((s) => ({ requests: s.requests.map((r) => (r === same ? { ...r, votes: r.votes + 1, mine: true } : r)) }))
-      toast('نفس الطلب موجود، انضاف صوتك له')
-    } else {
-      setState((s) => ({ requests: [{ id: 'r' + Date.now().toString(36), ...f, note: f.note.trim(), votes: 1, mine: true, done: false, at: new Date().toISOString().slice(0, 10) }, ...s.requests] }))
-      toast('انرسل طلبك')
-    }
-    setOpen(false)
-    setF({ course: '', type: 'past', note: '' })
+  async function add() {
+    if (!a.user) { toast('سجّل دخولك من «حسابي» حتى تطلب'); return }
+    tap(); setBusy(true)
+    const e = await addRequest({ ...f, note: f.note.trim() })
+    setBusy(false)
+    if (e && e !== 'voted') return toast('ما انرسل، تأكد من النت')
+    toast(e === 'voted' ? 'نفس الطلب موجود، انضاف صوتك له' : 'انرسل طلبك، ونبلغك أول ما ينرفع')
+    setOpen(false); setF({ course: '', type: 'past', note: '' })
   }
-  const vote = (r) => { tap(); setState((s) => ({ requests: s.requests.map((x) => (x.id === r.id ? { ...x, votes: x.votes + (x.mine ? -1 : 1), mine: !x.mine } : x)) })) }
-  const done = (r) => { tap(); setState((s) => ({ requests: s.requests.map((x) => (x.id === r.id ? { ...x, done: !x.done } : x)) })) }
+  async function vote(r) {
+    if (!a.user) return toast('سجّل دخولك حتى تصوّت')
+    tap(); await voteRequest(r)
+  }
+  async function del(r) {
+    if (!confirm('تمسح هذا الطلب؟')) return
+    const e = await deleteRequest(r.id); toast(e ? 'ما انمسح' : 'انمسح الطلب')
+  }
 
   return (
     <div className="screen">
-      <Bar title="الطلبات" sub="ناقصك ملف؟ اطلبه، والمشرفين يشوفون الأكثر طلباً أولاً" onBack={back}
-        end={admin && requests.length > 0 ? <button className="iconbtn" aria-label="تصدير إكسل" onClick={() => exportRequests(requests.map((r) => ({ ...r, course: courseById[r.course]?.name, type: FILE_TYPES.find((t) => t.id === r.type)?.name }))).then(() => toast('انحفظ الإكسل'))}><I n="sheet" size={20} /></button> : null} />
-      <button className="btn ac full" onClick={() => { tap(); setOpen(true) }}><I n="plus" size={19} />طلب ملف</button>
-      <div className="tabs" style={{ marginTop: 14 }}>
-        <button className={tab === 'open' ? 'on' : ''} onClick={() => setTab('open')}>بانتظار التوفير</button>
+      <Bar title="الطلبات" sub="ناقصك ملف؟ اطلبه، والأكثر طلباً يتوفّر أول" onBack={back}
+        end={staff && all.length > 0 ? <button className="iconbtn" aria-label="تصدير إكسل" onClick={() => exportRequests(all.map((r) => ({ ...r, course: courseById[r.course]?.name, type: typeOf(r.type).name }))).then(() => toast('انحفظ الإكسل'))}><I n="sheet" size={20} /></button> : null} />
+
+      <button className="btn ac full" onClick={() => { tap(); setOpen(true) }}><I n="plus" size={19} />اطلب ملف</button>
+
+      <div className="seg" style={{ marginTop: 14 }}>
+        <button className={tab === 'open' ? 'on' : ''} onClick={() => setTab('open')}>بانتظار التوفير{openN ? ` (${openN})` : ''}</button>
         <button className={tab === 'done' ? 'on' : ''} onClick={() => setTab('done')}>تم التوفير</button>
       </div>
-      <div className="stack stagger" key={tab}>
-        {list.map((r) => (
-          <div key={r.id} className="row" style={{ cursor: 'default' }}>
-            <button onClick={() => vote(r)} className="ic" style={{ border: 'none', cursor: 'pointer', flexDirection: 'column', lineHeight: 1.1, background: r.mine ? 'var(--ac)' : 'var(--acs)', color: r.mine ? '#fff' : 'var(--ac)' }} aria-label="أنا هم أحتاجه">
-              <span style={{ fontSize: 11 }}>▲</span><span style={{ fontSize: 14 }}>{r.votes}</span>
-            </button>
-            <div style={{ minWidth: 0, flex: 1 }} onClick={() => nav('course', { id: r.course })}>
-              <div className="t">{FILE_TYPES.find((t) => t.id === r.type)?.name} · {courseById[r.course]?.name}</div>
-              <div className="m">{r.note || 'بدون تفاصيل'} · {r.at}</div>
+      {a.user && <div className="chips" style={{ marginBottom: 12 }}><button className={`chip ${mineOnly ? 'on' : ''}`} onClick={() => setMineOnly(!mineOnly)}><I n="user" size={15} />طلباتي بس</button></div>}
+
+      <div className="stack stagger" key={tab + mineOnly}>
+        {list.map((r) => {
+          const c = courseById[r.course]
+          const t = typeOf(r.type)
+          return (
+            <div key={r.id} className={`req ${r.done ? 'done' : ''}`} style={{ '--h': courseHue(r.course) }}>
+              <button className={`vote ${r.mine ? 'on' : ''}`} onClick={() => vote(r)} disabled={r.done} aria-label="أنا هم أحتاجه">
+                <I n="arrow" size={15} style={{ transform: 'rotate(90deg)' }} /><b>{r.votes}</b>
+              </button>
+              <button className="req-b" onClick={() => nav('course', { id: r.course, type: r.type })}>
+                <span className="t">{t.name} · {c?.name || r.course}</span>
+                <span className="m">{r.note || 'بدون تفاصيل'} · {r.done ? `توفّر ${r.doneAt || ''}` : r.at}</span>
+                {r.done && <span className="pill ok" style={{ marginTop: 4 }}><I n="done" size={13} />انرفع، افتحه من المادة</span>}
+              </button>
+              <div className="req-x">
+                {staff && <button className="btn soft sm" onClick={async () => { tap(); await setRequestDone(r.id, !r.done); toast(r.done ? 'رجع للانتظار' : 'تعلّم تم التوفير') }}>{r.done ? 'إرجاع' : <><I n="check" size={15} />تم</>}</button>}
+                {(r.own || staff) && <button className="iconbtn sm" onClick={() => del(r)} aria-label="مسح"><I n="trash" size={16} /></button>}
+              </div>
             </div>
-            {admin && <button className="btn soft sm" onClick={() => done(r)}>{r.done ? 'إرجاع' : <><I n="check" size={15} />تم</>}</button>}
-          </div>
-        ))}
+          )
+        })}
       </div>
-      {!list.length && <Empty e={tab === 'open' ? 'ask' : 'done'} t={tab === 'open' ? 'ما أكو طلبات حالياً' : 'ما انوفر شي بعد'} />}
+      {!list.length && <Empty e={tab === 'open' ? 'ask' : 'done'} t={tab === 'open' ? 'ماكو طلبات بانتظار التوفير' : 'ما انوفر شي بعد'} />}
+      <p className="small muted" style={{ margin: '14px 4px 0' }}>لما المشرف يرفع ملف لنفس المادة ونفس النوع، الطلب ينتقل لـ«تم التوفير» تلقائياً.</p>
 
       <Sheet open={open} onClose={() => setOpen(false)} title="طلب ملف">
         <label className="field"><span>المادة</span>
           <select className="input" value={f.course} onChange={(e) => setF({ ...f, course: e.target.value })}>
             <option value="">اختر المادة</option>
-            {COURSES.filter((c) => c.stage === profile.stage).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            <optgroup label="مراحل ثانية">{COURSES.filter((c) => c.stage !== profile.stage).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</optgroup>
+            <optgroup label="مواد مرحلتي">{COURSES.filter((c) => myStage.has(c.id)).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</optgroup>
+            <optgroup label="مواد ثانية">{COURSES.filter((c) => !myStage.has(c.id)).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</optgroup>
           </select>
         </label>
-        <div className="field"><span>النوع</span>
+        <div className="field"><span>شنو تحتاج؟</span>
           <div className="chips">{FILE_TYPES.map((t) => <button key={t.id} className={`chip ${f.type === t.id ? 'on' : ''}`} onClick={() => setF({ ...f, type: t.id })}><I n={t.icon} size={16} />{t.name}</button>)}</div>
         </div>
         <label className="field"><span>تفاصيل (اختياري)</span>
           <input className="input" value={f.note} maxLength={120} onChange={(e) => setF({ ...f, note: e.target.value })} placeholder="مثلاً: أسئلة 2023 دور ثاني" />
         </label>
-        <button className="btn ac full" disabled={!f.course} onClick={add}>إرسال الطلب</button>
+        <button className="btn ac full" disabled={!f.course || busy} onClick={add}>{busy ? 'لحظة…' : 'إرسال الطلب'}</button>
       </Sheet>
     </div>
   )

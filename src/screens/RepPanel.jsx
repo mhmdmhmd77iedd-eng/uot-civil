@@ -92,7 +92,7 @@ export default function RepPanel({ back, nav }) {
           <button className={`chip ${f.urgent ? 'on' : ''}`} onClick={() => setF({ ...f, urgent: !f.urgent })}><I n="bell" size={15} />عاجل</button>
           {isStaff(a) && <button className={`chip ${f.general ? 'on' : ''}`} onClick={() => setF({ ...f, general: !f.general })}>لكل طلاب القسم</button>}
         </div>
-        <button className="btn ac full" disabled={busy || !f.title.trim() || !f.body.trim()} onClick={async () => { setBusy(true); const e = await postAnnouncement({ ...f, title: f.title.trim(), body: f.body.trim() }); setBusy(false); if (e) toast('ما انشر، تأكد من صلاحيتك'); else { setAnn(false); setF({ title: '', body: '', urgent: false, general: false }); toast('انشر الإعلان') } }}>نشر</button>
+        <button className="btn ac full" disabled={busy || !f.title.trim() || !f.body.trim()} onClick={async () => { setBusy(true); const e = await postAnnouncement({ ...f, board: f.general ? 'general' : 'section', title: f.title.trim(), body: f.body.trim() }); setBusy(false); if (e) toast('ما انشر، تأكد من صلاحيتك'); else { setAnn(false); setF({ title: '', body: '', urgent: false, general: false }); toast('انشر الإعلان') } }}>نشر</button>
       </Sheet>
     </div>
   )

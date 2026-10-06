@@ -34,6 +34,25 @@ export function QuoteCard({ q, fav, onFav, compact }) {
   )
 }
 
+// اقتباس قصير أسفل كل صفحة: يتغير حسب الصفحة واليوم
+const SHORT = QUOTES.filter((q) => q.t.length <= 110)
+export function quoteFor(seed, d = new Date()) {
+  const day = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 864e5) + d.getFullYear() * 400
+  const h = [...String(seed)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 100003, 7)
+  return SHORT[(day * 131 + h * 977) % SHORT.length]
+}
+export function QuoteBand({ seed, nav }) {
+  const q = quoteFor(seed)
+  if (!q) return null
+  return (
+    <button className="qband no-print" onClick={() => { tap(); nav('quotes') }} aria-label="اقتباسات">
+      <I n="quote" size={18} className="qi" />
+      <span className="qt">{q.t}</span>
+      <span className="qa">{q.a}</span>
+    </button>
+  )
+}
+
 export function QuoteOfDay({ nav }) {
   const { favQuotes } = useStore()
   const q = quoteOfDay()

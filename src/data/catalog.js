@@ -138,6 +138,16 @@ export function coursesFor(profile) {
   ).map((x) => (ov[x.id] ? { ...x, sem: ov[x.id] } : x))
 }
 
+// مواد الطالب بفصل معيّن، مربوطة بخطة الوحدات: نشيل المادة اللي شالها من الخطة ونضيف المحمّلة
+export function semCourses(profile, plan, sem) {
+  const base = coursesFor(profile).filter((c) => c.sem === sem)
+  const ids = plan?.[sem]
+  if (!ids) return base
+  const keep = base.filter((c) => c.branches || ids.includes(c.id))
+  const carried = ids.map((id) => courseById[id]).filter((c) => c && c.stage < profile.stage).map((c) => ({ ...c, carried: true }))
+  return [...keep, ...carried]
+}
+
 export const before = (id) => PREREQS.filter(([, b]) => b === id).map(([a]) => a)
 export const after = (id) => PREREQS.filter(([a]) => a === id).map(([, b]) => b)
 

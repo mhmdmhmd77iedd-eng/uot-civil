@@ -118,3 +118,20 @@ export function checkReminders(now = new Date()) {
   }
   if (changed) setState({ notified: sent })
 }
+
+// «قبل ساعتين»، «أمس»، «قبل 3 أيام»
+export function ago(iso, now = Date.now()) {
+  if (!iso) return ''
+  const m = Math.round((now - new Date(iso).getTime()) / 6e4)
+  if (m < 1) return 'هسه'
+  if (m < 60) return `قبل ${m} دقيقة`
+  const h = Math.round(m / 60)
+  if (h < 24) return h === 1 ? 'قبل ساعة' : h === 2 ? 'قبل ساعتين' : `قبل ${h} ساعات`
+  const d = Math.round(h / 24)
+  if (d === 1) return 'أمس'
+  if (d < 30) return d === 2 ? 'قبل يومين' : `قبل ${d} أيام`
+  return new Date(iso).toLocaleDateString('ar-IQ', { day: 'numeric', month: 'long' })
+}
+export const MONTHS = ['كانون الثاني', 'شباط', 'آذار', 'نيسان', 'أيار', 'حزيران', 'تموز', 'آب', 'أيلول', 'تشرين الأول', 'تشرين الثاني', 'كانون الأول']
+export const WEEKDAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+export const dateLong = (d) => `${WEEKDAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`

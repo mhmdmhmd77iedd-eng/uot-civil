@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useStore } from './lib/store'
 import { ToastHost, Watermark, Footer, transition, tap } from './components/ui'
 import Onboarding from './screens/Onboarding'
@@ -12,13 +12,16 @@ import Schedule from './screens/Schedule'
 import { checkReminders } from './lib/schedule'
 import RepPanel from './screens/RepPanel'
 import Store from './screens/Store'
-import Quotes from './screens/Quotes'
+import Quotes, { QuoteBand } from './screens/Quotes'
 import { startAuth } from './lib/sb'
 import Requests from './screens/Requests'
 import Settings from './screens/Settings'
 import Developer from './screens/Developer'
 import { I } from './components/icons'
-import { News, Bologna, Exams } from './screens/Info'
+import { Bologna } from './screens/Info'
+import News, { unseenCount } from './screens/News'
+import Exams from './screens/Exams'
+import DevPanel from './screens/DevPanel'
 
 const TABS = [
   { id: 'home', n: 'الرئيسية', i: 'home' },
@@ -44,6 +47,7 @@ function useTheme(theme) {
 
 export default function App() {
   const profile = useStore((s) => s.profile)
+  const unseen = useStore(unseenCount)
   const theme = useStore((s) => s.theme)
   useTheme(theme)
   const [stack, setStack] = useState([{ name: 'home', p: {} }])
@@ -60,7 +64,14 @@ export default function App() {
     })
     if (!replace) history.pushState({ d: Date.now() }, '')
   }, [])
-  const back = useCallback(() => history.back(), [])
+  // الرجوع: إذا ماكو صفحة قبلها (مثل الإعلانات من الشريط السفلي) يرجع للرئيسية
+  const stackRef = useRef(stack)
+  stackRef.current = stack
+  const back = useCallback(() => {
+    const st = stackRef.current
+    if (st.length > 1) history.back()
+    else if (st[0].name !== 'home') transition(() => { setStack([{ name: 'home', p: {} }]); scrollTo({ top: 0 }) })
+  }, [])
 
   useEffect(() => { startAuth() }, [])
 
@@ -75,7 +86,7 @@ export default function App() {
   }, [profile])
 
   useEffect(() => {
-    const onPop = () => transition(() => setStack((st) => (st.length > 1 ? st.slice(0, -1) : st)))
+    const onPop = () => transition(() => setStack((st) => (st.length > 1 ? st.slice(0, -1) : st[0].name !== 'home' ? [{ name: 'home', p: {} }] : st)))
     addEventListener('popstate', onPop)
     return () => removeEventListener('popstate', onPop)
   }, [])
@@ -85,7 +96,7 @@ export default function App() {
   const props = { ...cur.p, nav, back }
   const screens = {
     home: Home, library: Library, course: Course, upload: Upload, map: MapScreen, calc: Calc, schedule: Schedule, rep: RepPanel, store: Store, quotes: Quotes,
-    requests: Requests, settings: Settings, developer: Developer, news: News, bologna: Bologna, exams: Exams,
+    requests: Requests, settings: Settings, developer: Developer, news: News, bologna: Bologna, exams: Exams, devpanel: DevPanel,
     profile: () => <Onboarding initial={profile} onDone={back} />,
   }
   const S = screens[cur.name] || Home
@@ -96,12 +107,13 @@ export default function App() {
       <Watermark />
       <div className="app">
         <S key={cur.name + JSON.stringify(cur.p)} {...props} />
+        {!['home', 'quotes'].includes(cur.name) && <QuoteBand seed={cur.name} nav={nav} />}
         <Footer />
       </div>
       <nav className="nav no-print" aria-label="التنقل">
         {TABS.map((t) => (
           <button key={t.id} className={tabOf === t.id ? 'on' : ''} onClick={() => { tap(); nav(t.id) }} aria-current={tabOf === t.id}>
-            <I n={t.i} size={23} /><span>{t.n}</span>
+            <I n={t.i} size={23} /><span>{t.n}</span>{t.id === 'news' && unseen > 0 && <b className="navdot">{unseen > 9 ? '9+' : unseen}</b>}
           </button>
         ))}
       </nav>
