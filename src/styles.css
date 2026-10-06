@@ -675,3 +675,32 @@ button.prod:active { transform: scale(.96); }
 .cmt-new .btn { padding: 13px 14px; }
 .cmt-new .btn .i { transform: scaleX(-1); }
 .sheet-bg { z-index: 70; } .sheet { z-index: 71; } .toast { z-index: 80; }
+
+/* استمارة التسجيل الرسمية */
+.regsum { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--mu); }
+.regsum b { font-family: var(--hd); color: var(--ac); font-size: 16px; }
+.regwrap { border-radius: 14px; overflow: hidden; box-shadow: var(--sh2); background: #fff; }
+.regpage { position: relative; width: 100%; aspect-ratio: 935 / 1210; container-type: inline-size; color: #0b2a8a; font-family: 'IBM Plex Sans Arabic', Tahoma, sans-serif; font-weight: 600; page: reg; }
+.regpage img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.rf { position: absolute; transform: translateY(-50%); font-size: 1.9cqw; line-height: 1.2; white-space: nowrap; }
+.rf.c { transform: translate(-50%, -50%); text-align: center; }
+.rf.ltr { direction: ltr; }
+.rf.cn { white-space: normal; font-size: 1.75cqw; text-align: right; }
+.rf.tick { transform: translate(-50%, -50%); font-size: 2.8cqw; color: #0b2a8a; }
+.cwrap { display: grid; gap: 6px; }
+.cmode { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--sf2); border-radius: 12px; padding: 3px; }
+.cmode button { border: none; background: none; border-radius: 9px; padding: 6px; font-size: 12px; font-weight: 600; color: var(--mu); cursor: pointer; transition: background .3s, color .3s; }
+.cmode button.on { background: var(--sf); color: var(--ac); box-shadow: var(--sh); }
+@page reg { size: letter; margin: 0; }
+@media print {
+  body.preg * { visibility: hidden !important; }
+  body.preg .regpage, body.preg .regpage * { visibility: visible !important; }
+  body.preg .regwrap { position: absolute; left: 0; top: 0; width: 8.5in; box-shadow: none; border-radius: 0; }
+  body.preg .regpage { width: 8.5in; }
+  body.preg .wm, body.preg .print-only { display: none !important; }
+  body.preg::before, body.preg::after { display: none; }
+}
+.xrules { margin-top: 14px; }
+.xrules summary { display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; list-style: none; color: var(--ac); }
+.xrules summary::-webkit-details-marker { display: none; }
+.xrules ol { margin: 10px 0 8px; padding-inline-start: 20px; font-size: 13.5px; line-height: 1.8; }

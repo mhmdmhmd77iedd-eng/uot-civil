@@ -50,6 +50,8 @@ function Plan({ profile, plan, nav }) {
     const n = new Set(carriedIds); n.has(id) ? n.delete(id) : n.add(id)
     setState((s) => ({ plan: { ...s.plan, carried: [...n] } }))
   }
+  const exOnly = new Set(plan?.examOnly || [])
+  const setEx = (id, v) => { tap(); const n = new Set(exOnly); v ? n.add(id) : n.delete(id); setState((s) => ({ plan: { ...s.plan, examOnly: [...n] } })) }
   const Row = (c, kind) => {
     const lock = kind !== 'carried' && kind !== 'pick' && lockOf(c.id)
     if (lock) return (
@@ -87,7 +89,15 @@ function Plan({ profile, plan, nav }) {
       <div className="sec">مواد مرحلتك</div>
       <div className="stack">{mine.map((c) => Row(c))}</div>
       <div className="sec">المواد المحمّلة عليك</div>
-      {carried.length > 0 && <div className="stack" style={{ marginBottom: 10 }}>{carried.map((c) => Row(c, 'carried'))}</div>}
+      {carried.length > 0 && <div className="stack" style={{ marginBottom: 10 }}>{carried.map((c) => (
+        <div key={c.id} className="cwrap">
+          {Row(c, 'carried')}
+          <div className="cmode">
+            <button className={!exOnly.has(c.id) ? 'on' : ''} onClick={() => setEx(c.id, false)}>دوام وامتحان</button>
+            <button className={exOnly.has(c.id) ? 'on' : ''} onClick={() => setEx(c.id, true)}>امتحان فقط</button>
+          </div>
+        </div>
+      ))}</div>}
       {carriedOther.length > 0 && <p className="small muted" style={{ margin: '0 4px 10px' }}>وعندك محمّلة بال{sem === 1 ? 'فصل الثاني' : 'فصل الأول'}: {carriedOther.map((c) => c.name).join('، ')}.</p>}
       <button className="btn soft full" onClick={() => { tap(); setAdd(true) }}><I n="plus" size={18} />{carriedIds.size ? 'عدّل المواد المحمّلة' : 'عندي مادة محمّلة، أضيفها'}</button>
       <Sheet open={add} onClose={() => setAdd(false)} title="شنو المواد المحمّلة عليك؟">
@@ -100,6 +110,7 @@ function Plan({ profile, plan, nav }) {
         ))}
         <button className="btn ac full" style={{ marginTop: 12, position: 'sticky', bottom: 0 }} onClick={() => setAdd(false)}>تم</button>
       </Sheet>
+      <button className="btn ac full" style={{ marginTop: 14 }} onClick={() => { tap(); nav('regform', { sem }) }}><I n="paper" size={18} />املأ استمارة التسجيل الرسمية</button>
       <p className="small muted" style={{ marginTop: 14 }}>الوحدات من مخطط المتطلبات الرسمي 2023/2024. هذي خطة تساعدك قبل التسجيل، والتسجيل الرسمي يبقى من منظومة بولونيا.</p>
     </>
   )

@@ -14,6 +14,7 @@ import RepPanel from './screens/RepPanel'
 import Store from './screens/Store'
 import Quotes, { QuoteBand } from './screens/Quotes'
 import Spotlight from './screens/Spotlight'
+import RegForm from './screens/RegForm'
 import { startAuth } from './lib/sb'
 import Requests from './screens/Requests'
 import Settings from './screens/Settings'
@@ -97,7 +98,7 @@ export default function App() {
   const props = { ...cur.p, nav, back }
   const screens = {
     home: Home, library: Library, course: Course, upload: Upload, map: MapScreen, calc: Calc, schedule: Schedule, rep: RepPanel, store: Store, quotes: Quotes,
-    requests: Requests, settings: Settings, developer: Developer, news: News, bologna: Bologna, exams: Exams, devpanel: DevPanel, spotlight: Spotlight,
+    requests: Requests, settings: Settings, developer: Developer, news: News, bologna: Bologna, exams: Exams, devpanel: DevPanel, spotlight: Spotlight, regform: RegForm,
     profile: () => <Onboarding initial={profile} onDone={back} />,
   }
   const S = screens[cur.name] || Home
