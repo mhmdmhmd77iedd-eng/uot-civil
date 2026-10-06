@@ -167,13 +167,46 @@ export async function fetchBoards() {
   if (res[0].error) return
   setState({ srvAnns: res.flatMap((r) => r.data || []) })
 }
-export async function postAnnouncement({ title, body, urgent, board }) {
+export async function postAnnouncement({ title, body, urgent, board, pinned = false, comments_on = true }) {
   const p = getState().profile
-  const row = { title, body, urgent, section_id: board === 'section' ? acct.section?.id : null, stage: board === 'stage' ? p.stage : null }
+  const row = { title, body, urgent, pinned, comments_on, section_id: board === 'section' ? acct.section?.id : null, stage: board === 'stage' ? p.stage : null }
   const { error } = await sb.from('announcements').insert(row)
   if (!error) await fetchBoards()
   return error
 }
+export async function pinAnnouncement(id, pinned) {
+  const { error } = await sb.from('announcements').update({ pinned }).eq('id', id)
+  if (!error) await fetchBoards()
+  return error
+}
+
+// ===== التعليقات: تنشر بعد موافقة المشرف أو ممثل اللوحة =====
+export const canModAnn = (x, a = acct) => !!a.user && (isStaff(a) || x.created_by === a.user.id
+  || (x.section_id && a.roles.some((r) => r.role === 'rep' && r.section_id === x.section_id))
+  || (!x.section_id && x.stage && a.roles.some((r) => r.role === 'stage_rep' && r.stage === x.stage)))
+export async function fetchComments(annId) {
+  const { data, error } = await sb.from('ann_comments').select('*').eq('announcement_id', annId).order('created_at')
+  return error ? null : data
+}
+export async function addComment(annId, body) {
+  const { error } = await sb.from('ann_comments').insert({ announcement_id: annId, body })
+  return error
+}
+export async function modComment(id, patch) {
+  const { error } = await sb.from('ann_comments').update(patch).eq('id', id)
+  return error
+}
+export async function deleteComment(id) {
+  const { error } = await sb.from('ann_comments').delete().eq('id', id)
+  return error
+}
+export async function commentCounts() {
+  const { data } = await sb.from('ann_comments').select('announcement_id,status')
+  const m = {}
+  ;(data || []).forEach((c) => { const k = c.announcement_id; m[k] ||= { all: 0, pending: 0 }; if (c.status === 'approved') m[k].all++; if (c.status === 'pending') m[k].pending++ })
+  return m
+}
+
 export async function deleteAnnouncement(id) {
   const { error } = await sb.from('announcements').delete().eq('id', id)
   if (!error) await fetchBoards()

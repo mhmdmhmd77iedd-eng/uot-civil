@@ -9,7 +9,7 @@ import { QuoteOfDay } from './Quotes'
 import { TaskRow } from './Schedule'
 import { CourseRow } from '../components/CourseRow'
 import { TodayCard, useMinute } from '../components/Today'
-import { BOARDS, boardOf } from './News'
+import { BOARDS, boardOf, Billboard } from './News'
 import { courseHue, initial } from '../lib/look'
 import { useAcct, isStaff } from '../lib/sb'
 import { nextClass, upcomingTasks, fmtTime, courseName, DAYS, ago, dateLong } from '../lib/schedule'
@@ -46,12 +46,12 @@ export default function Home({ nav }) {
 
   const tiles = [
     { i: 'calendar', h: HUES.sage, t: 'الامتحانات', go: 'exams' },
+    { i: 'megaphone', h: '#d23a8c', t: 'شاشة الإعلانات', go: 'spotlight' },
     { i: 'target', h: HUES.rose, t: 'وضعي بالمواد', go: 'calc' },
     { i: 'route', h: HUES.indigo, t: 'خريطة موادي', go: 'map' },
     { i: 'sheet', h: HUES.ocean, t: 'خطة الوحدات', go: 'map', p: { tab: 'plan' } },
     { i: 'ask', h: HUES.clay, t: 'الطلبات', go: 'requests' },
     { i: 'bag', h: HUES.amber, t: 'المتجر', go: 'store' },
-    { i: 'quote', h: HUES.plum, t: 'اقتباسات', go: 'quotes' },
     { i: 'cap', h: HUES.bronze, t: 'دليل بولونيا', go: 'bologna' },
     ...(isStaff(a) ? [{ i: 'shield', h: HUES.teal, t: 'لوحة المطوّر', go: 'devpanel' }] : [{ i: 'hardhat', h: HUES.teal, t: 'المطوّر', go: 'developer' }]),
   ]
@@ -103,6 +103,7 @@ export default function Home({ nav }) {
         </div>
       )}
 
+      {(s.srvAnns || []).some((x) => x.pinned) && <Billboard anns={(s.srvAnns || []).filter((x) => x.pinned)} nav={nav} />}
       <InstallCard />
       <TodayCard nav={nav} />
 

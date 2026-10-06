@@ -13,6 +13,7 @@ import { checkReminders } from './lib/schedule'
 import RepPanel from './screens/RepPanel'
 import Store from './screens/Store'
 import Quotes, { QuoteBand } from './screens/Quotes'
+import Spotlight from './screens/Spotlight'
 import { startAuth } from './lib/sb'
 import Requests from './screens/Requests'
 import Settings from './screens/Settings'
@@ -96,7 +97,7 @@ export default function App() {
   const props = { ...cur.p, nav, back }
   const screens = {
     home: Home, library: Library, course: Course, upload: Upload, map: MapScreen, calc: Calc, schedule: Schedule, rep: RepPanel, store: Store, quotes: Quotes,
-    requests: Requests, settings: Settings, developer: Developer, news: News, bologna: Bologna, exams: Exams, devpanel: DevPanel,
+    requests: Requests, settings: Settings, developer: Developer, news: News, bologna: Bologna, exams: Exams, devpanel: DevPanel, spotlight: Spotlight,
     profile: () => <Onboarding initial={profile} onDone={back} />,
   }
   const S = screens[cur.name] || Home
@@ -107,10 +108,10 @@ export default function App() {
       <Watermark />
       <div className="app">
         <S key={cur.name + JSON.stringify(cur.p)} {...props} />
-        {!['home', 'quotes'].includes(cur.name) && <QuoteBand seed={cur.name} nav={nav} />}
+        {!['home', 'quotes', 'spotlight'].includes(cur.name) && <QuoteBand seed={cur.name} nav={nav} />}
         <Footer />
       </div>
-      <nav className="nav no-print" aria-label="التنقل">
+      <nav className={`nav no-print ${cur.name === 'spotlight' ? 'gone' : ''}`} aria-label="التنقل">
         {TABS.map((t) => (
           <button key={t.id} className={tabOf === t.id ? 'on' : ''} onClick={() => { tap(); nav(t.id) }} aria-current={tabOf === t.id}>
             <I n={t.i} size={23} /><span>{t.n}</span>{t.id === 'news' && unseen > 0 && <b className="navdot">{unseen > 9 ? '9+' : unseen}</b>}
