@@ -141,10 +141,13 @@ export function coursesFor(profile) {
 // مواد الطالب بفصل معيّن، مربوطة بخطة الوحدات: نشيل المادة اللي شالها من الخطة ونضيف المحمّلة
 export function semCourses(profile, plan, sem) {
   const base = coursesFor(profile).filter((c) => c.sem === sem)
-  const ids = plan?.[sem]
-  if (!ids) return base
-  const keep = base.filter((c) => c.branches || ids.includes(c.id))
-  const carried = ids.map((id) => courseById[id]).filter((c) => c && c.stage < profile.stage).map((c) => ({ ...c, carried: true }))
+  if (!plan) return base
+  const all = [...(plan[1] || []), ...(plan[2] || [])]
+  const cids = new Set(plan.carried ?? COURSES.filter((c) => c.stage < profile.stage && all.includes(c.id)).map((c) => c.id))
+  const carried = [...cids].map((id) => courseById[id]).filter((c) => c && c.sem === sem).map((c) => ({ ...c, carried: true }))
+  const ids = plan[sem]
+  // المادة اللي متطلبها محمّل عليك تنقفل لحد ما تعبر المتطلب
+  const keep = base.filter((c) => (c.branches || !ids || ids.includes(c.id)) && !PREREQS.some(([a, b]) => b === c.id && cids.has(a)))
   return [...keep, ...carried]
 }
 

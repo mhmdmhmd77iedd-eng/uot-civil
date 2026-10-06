@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client'
 import './styles.css'
 import App from './App'
 import './lib/install'
+import { installSounds } from './lib/sound'
+installSounds()
 
 createRoot(document.getElementById('root')).render(<StrictMode><App /></StrictMode>)
 

@@ -64,6 +64,7 @@ export default function Settings({ nav }) {
 
       <div className="sec">المظهر</div>
       <div className="tabs">{themes.map((t) => <button key={t.id} className={s.theme === t.id ? 'on' : ''} onClick={() => { tap(); setState({ theme: t.id }) }}>{t.n}</button>)}</div>
+      <label className="switchrow"><span>أصوات النقر</span><input type="checkbox" className="sw" checked={s.sound !== false} onChange={(e) => setState({ sound: e.target.checked })} /></label>
 
       <div className="sec">التطبيق</div>
       <div className="stack">

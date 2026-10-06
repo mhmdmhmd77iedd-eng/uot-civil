@@ -1,3 +1,4 @@
+import { chime } from '../lib/sound'
 import { useEffect, useState } from 'react'
 import { useStore, setState } from '../lib/store'
 import { COURSES, coursesFor } from '../data/catalog'
@@ -100,7 +101,7 @@ function TaskForm({ init, profile, onDone }) {
 export function TaskRow({ t, onEdit }) {
   const tt = taskType(t.type)
   const d = dueText(t)
-  const toggle = (e) => { e.stopPropagation(); tap(); setState((s) => ({ tasks: s.tasks.map((x) => (x.id === t.id ? { ...x, done: !x.done } : x)) })) }
+  const toggle = (e) => { e.stopPropagation(); tap(); if (!t.done) chime(); setState((s) => ({ tasks: s.tasks.map((x) => (x.id === t.id ? { ...x, done: !x.done } : x)) })) }
   return (
     <div className={`task ${t.done ? 'done' : ''}`} style={{ '--h': d.late && !t.done ? 'var(--bad)' : tt.h }} onClick={onEdit} role="button">
       <button className="ck" onClick={toggle} aria-label={t.done ? 'رجّعها' : 'خلصت'}>{t.done && <I n="check" size={16} />}</button>

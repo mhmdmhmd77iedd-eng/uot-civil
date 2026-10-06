@@ -1,4 +1,5 @@
 import { useEffect, useState, createContext, useContext, useCallback } from 'react'
+import { chime } from '../lib/sound'
 import { createPortal } from 'react-dom'
 import { CREDIT, DEV, APP_NAME, DISCLAIMER } from '../lib/brand'
 import { VERSION } from '../lib/store'
@@ -16,7 +17,7 @@ const ToastCtx = createContext(() => {})
 export const useToast = () => useContext(ToastCtx)
 export function ToastHost({ children }) {
   const [msg, setMsg] = useState(null)
-  const show = useCallback((m) => { setMsg({ m, k: Date.now() }) }, [])
+  const show = useCallback((m) => { chime(); setMsg({ m, k: Date.now() }) }, [])
   useEffect(() => { if (!msg) return; const t = setTimeout(() => setMsg(null), 2600); return () => clearTimeout(t) }, [msg])
   return (
     <ToastCtx.Provider value={show}>

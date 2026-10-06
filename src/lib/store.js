@@ -3,11 +3,12 @@ import { useSyncExternalStore } from 'react'
 
 const KEY = 'almadani:v1'
 const BK = 'almadani:backups'
-export const VERSION = '1.3.0'
+export const VERSION = '1.3.1'
 
 const initial = {
   profile: null, // { branch, stage, shift, name }
   theme: 'auto',
+  sound: true,
   admin: false,
   realProfile: null, // شعبة المطوّر الأصلية لما يعاين شعبة ثانية
   grades: {}, // courseId -> { saee, mid }

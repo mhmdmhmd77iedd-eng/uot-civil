@@ -30,23 +30,44 @@ function Plan({ profile, plan, nav }) {
   const slots = (ELECTIVE_SLOTS[`${profile.stage}-${sem}`] || []).map((u, i) => ({ id: `EL:${profile.stage}-${sem}:${i}`, name: `مادة اختيارية من فرعك (${i + 1})`, ects: u, stage: profile.stage, sem }))
   const mine = [...coursesFor(profile).filter((c) => c.sem === sem && !c.branches), ...slots]
   const unit = (id) => courseById[id]?.ects ?? slots.find((x) => x.id === id)?.ects ?? 0
+  // المواد المحمّلة عليك (من أي فصل) بقائمة وحدة، وكل وحدة تنسجل بفصلها
+  const carriedIds = new Set(plan?.carried ?? COURSES.filter((c) => c.stage < profile.stage && [...(plan?.[1] || []), ...(plan?.[2] || [])].includes(c.id)).map((c) => c.id))
+  const carriedAll = COURSES.filter((c) => c.stage < profile.stage && !c.branches)
+  const carried = carriedAll.filter((c) => carriedIds.has(c.id) && c.sem === sem)
+  const carriedOther = carriedAll.filter((c) => carriedIds.has(c.id) && c.sem !== sem)
+  // المادة اللي متطلبها محمّل عليك تنقفل وما تنحسب وحداتها
+  const lockOf = (id) => before(id).find((x) => carriedIds.has(x))
   // أول مرة: كل مواد مرحلتك مختارة
   const chosen = new Set(plan?.[sem] ?? mine.map((c) => c.id))
-  const total = [...chosen].filter((id) => !id.startsWith('EL:') || slots.some((x) => x.id === id)).reduce((t, id) => t + unit(id), 0)
+  const counted = [...mine.filter((c) => chosen.has(c.id) && !lockOf(c.id)), ...carried]
+  const total = counted.reduce((t, c) => t + unit(c.id), 0)
   const left = MAX_UNITS - total
   const over = left < 0
-  const carriedAll = COURSES.filter((c) => c.stage < profile.stage && c.sem === sem && !c.branches)
-  const carried = carriedAll.filter((c) => chosen.has(c.id))
   const save = (n) => setState((s) => ({ plan: { ...s.plan, [sem]: [...n] } }))
   const toggle = (id) => { tap(); const n = new Set(chosen); n.has(id) ? n.delete(id) : n.add(id); save(n) }
+  const toggleCarried = (id) => {
+    tap()
+    const n = new Set(carriedIds); n.has(id) ? n.delete(id) : n.add(id)
+    setState((s) => ({ plan: { ...s.plan, carried: [...n] } }))
+  }
   const Row = (c, kind) => {
-    const on = chosen.has(c.id)
+    const lock = kind !== 'carried' && kind !== 'pick' && lockOf(c.id)
+    if (lock) return (
+      <div key={c.id} className="prow locked" style={{ '--h': courseHue(c.id) }}>
+        <span className="pbox"><I n="lock" size={14} /></span>
+        <span className="pm"><span className="t">{c.name}</span><span className="m tone-bad">مقفولة: لازم تعبر {courseById[lock].name} أول</span></span>
+        <span className="pu"><b>{c.ects}</b>وحدة</span>
+      </div>
+    )
+    const on = kind === 'pick' ? carriedIds.has(c.id) : kind === 'carried' ? true : chosen.has(c.id)
     const pre = before(c.id).filter((x) => chosen.has(x))
+    const sub = kind === 'pick' ? `${STAGES.find((x) => x.id === c.stage)?.name} · الفصل ${c.sem === 1 ? 'الأول' : 'الثاني'}`
+      : kind === 'carried' ? `محمّلة من ${STAGES.find((x) => x.id === c.stage)?.name}` : on ? 'راح تسجلها' : 'ما راح تسجلها هذا الفصل'
     return (
-      <button key={c.id} className={`prow ${on ? 'on' : ''}`} style={{ '--h': courseHue(c.id) }} onClick={() => toggle(c.id)}>
+      <button key={c.id} className={`prow ${on ? 'on' : ''}`} style={{ '--h': courseHue(c.id) }} onClick={() => (kind === 'pick' || kind === 'carried' ? toggleCarried(c.id) : toggle(c.id))}>
         <span className="pbox">{on && <I n="check" size={16} />}</span>
         <span className="pm"><span className="t">{c.name}</span>
-          <span className="m">{kind === 'carried' ? `محمّلة من ${STAGES.find((x) => x.id === c.stage)?.name}` : on ? 'راح تسجلها' : 'ما راح تسجلها هذا الفصل'}{pre.length ? <span className="tone-bad"> · متطلبها {courseById[pre[0]].name} بنفس الفصل</span> : null}</span></span>
+          <span className="m">{sub}{kind !== 'pick' && pre.length ? <span className="tone-bad"> · متطلبها {courseById[pre[0]].name} بنفس الفصل</span> : null}</span></span>
         <span className="pu"><b>{c.ects}</b>وحدة</span>
       </button>
     )
@@ -65,13 +86,19 @@ function Plan({ profile, plan, nav }) {
       <p className="small muted" style={{ margin: '0 4px 12px' }}>علّم المواد اللي راح تسجلها هذا الفصل. الحد {MAX_UNITS} وحدة، فإذا عندك مادة محمّلة لازم يبقى إلها مكان. اختياراتك تنعكس على المكتبة والرئيسية.</p>
       <div className="sec">مواد مرحلتك</div>
       <div className="stack">{mine.map((c) => Row(c))}</div>
-      <div className="sec">المواد المحمّلة</div>
+      <div className="sec">المواد المحمّلة عليك</div>
       {carried.length > 0 && <div className="stack" style={{ marginBottom: 10 }}>{carried.map((c) => Row(c, 'carried'))}</div>}
-      <button className="btn soft full" onClick={() => { tap(); setAdd(true) }}><I n="plus" size={18} />{carried.length ? 'أضف مادة محمّلة ثانية' : 'عندي مادة محمّلة، أضيفها'}</button>
-      <Sheet open={add} onClose={() => setAdd(false)} title="اختر المادة المحمّلة">
-        <p className="small muted" style={{ marginTop: 0 }}>مواد {sem === 1 ? 'الفصل الأول' : 'الفصل الثاني'} من المراحل السابقة. باقي عندك {Math.max(0, left)} وحدة.</p>
-        <div className="stack">{carriedAll.map((c) => Row(c, 'carried'))}</div>
-        <button className="btn ac full" style={{ marginTop: 12 }} onClick={() => setAdd(false)}>تم</button>
+      {carriedOther.length > 0 && <p className="small muted" style={{ margin: '0 4px 10px' }}>وعندك محمّلة بال{sem === 1 ? 'فصل الثاني' : 'فصل الأول'}: {carriedOther.map((c) => c.name).join('، ')}.</p>}
+      <button className="btn soft full" onClick={() => { tap(); setAdd(true) }}><I n="plus" size={18} />{carriedIds.size ? 'عدّل المواد المحمّلة' : 'عندي مادة محمّلة، أضيفها'}</button>
+      <Sheet open={add} onClose={() => setAdd(false)} title="شنو المواد المحمّلة عليك؟">
+        <p className="small muted" style={{ marginTop: 0 }}>علّم كل مادة ما عبرتها من المراحل السابقة. كل مادة تنسجل بفصلها، والمواد اللي تعتمد عليها تنقفل لحد ما تعبرها.</p>
+        {[1, 2].map((sm) => (
+          <div key={sm}>
+            <div className="sec">الفصل {sm === 1 ? 'الأول' : 'الثاني'}</div>
+            <div className="stack">{carriedAll.filter((c) => c.sem === sm).map((c) => Row(c, 'pick'))}</div>
+          </div>
+        ))}
+        <button className="btn ac full" style={{ marginTop: 12, position: 'sticky', bottom: 0 }} onClick={() => setAdd(false)}>تم</button>
       </Sheet>
       <p className="small muted" style={{ marginTop: 14 }}>الوحدات من مخطط المتطلبات الرسمي 2023/2024. هذي خطة تساعدك قبل التسجيل، والتسجيل الرسمي يبقى من منظومة بولونيا.</p>
     </>
