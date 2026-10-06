@@ -7,7 +7,7 @@ export const SB_URL = 'https://kdsesjhilvcbnofaqpml.supabase.co'
 export const SB_KEY = 'sb_publishable_19KduHdwJ2e79IT4OjiqXg_M22daw2p'
 export const APP_URL = 'https://mhmdmhmd77iedd-eng.github.io/uot-civil/'
 // الدخول يظهر للكل بعد ما عبدالله يسوي حسابه ويصير المطوّر؛ قبلها يظهر بوضع المشرف بس
-export const AUTH_LIVE = false
+export const AUTH_LIVE = true
 
 export const sb = createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' } })
 
