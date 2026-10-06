@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore, setState, getState } from '../lib/store'
 import { useAcct, isStaff, isRep, isStageRep, isVerified, postAnnouncement, deleteAnnouncement, pinAnnouncement, canModAnn, fetchBoards, sb } from '../lib/sb'
 import { Comments } from '../components/Comments'
@@ -147,16 +147,24 @@ export default function News({ back, nav, board: b0 }) {
   )
 }
 
-// شريط الشاشة المميزة أعلى صفحة الإعلانات والرئيسية
-export function Billboard({ anns, nav }) {
-  const top = [...anns].sort((x, y) => (y.pinned - x.pinned) || (new Date(y.created_at) - new Date(x.created_at)))
-  const lead = top[0]
+// شاشة مصغّرة: تقلب آخر الإعلانات وحدها، وتنفتح الشاشة الكاملة بالضغط
+export function Billboard({ anns, nav, big }) {
+  const top = [...anns].sort((x, y) => (y.pinned - x.pinned) || (y.urgent - x.urgent) || (new Date(y.created_at) - new Date(x.created_at))).slice(0, 8)
+  const [k, setK] = useState(0)
+  useEffect(() => {
+    if (top.length < 2) return
+    const t = setInterval(() => setK((n) => (n + 1) % top.length), 5000)
+    return () => clearInterval(t)
+  }, [top.length])
+  const x = top[k % (top.length || 1)]
+  const b = x ? BOARDS.find((y) => y.id === boardOf(x)) : null
   return (
-    <button className="bboard" onClick={() => { tap(); nav('spotlight') }}>
+    <button className={`bboard ${big ? 'big' : ''}`} onClick={() => { tap(); nav('spotlight', x ? { id: x.id } : undefined) }}>
       <span className="bb-grid" />
-      <span className="bb-tag"><i />الشاشة</span>
-      <span className="bb-t">{lead ? lead.title : 'شاشة الإعلانات المميزة'}</span>
-      <span className="bb-run"><span>{(top.length ? top.slice(0, 6).map((x) => x.title) : ['أخبار المرحلة', 'تبليغات القسم', 'إعلانات الكلية']).join('   ·   ')}</span></span>
+      <span className="bb-tag"><i />شاشة الإعلانات{b ? ` · ${b.n}` : ''}{x?.urgent ? ' · عاجل' : ''}</span>
+      <span className="bb-t" key={x?.id || 'none'}>{x ? x.title : 'ماكو إعلانات هسه، أول إعلان ينشر يضوي هنا'}</span>
+      {big && x && <span className="bb-b" key={'b' + x.id}>{x.body}</span>}
+      {top.length > 1 && <span className="bb-dots">{top.map((y, j) => <i key={y.id} className={j === k % top.length ? 'on' : ''} />)}</span>}
       <I n="chev" size={18} className="bb-go" />
     </button>
   )

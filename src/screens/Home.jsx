@@ -103,7 +103,7 @@ export default function Home({ nav }) {
         </div>
       )}
 
-      {(s.srvAnns || []).some((x) => x.pinned) && <Billboard anns={(s.srvAnns || []).filter((x) => x.pinned)} nav={nav} />}
+      <Billboard anns={s.srvAnns || []} nav={nav} big />
       <InstallCard />
       <TodayCard nav={nav} />
 

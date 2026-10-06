@@ -650,6 +650,14 @@ button.prod:active { transform: scale(.96); }
 .bb-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 700; color: #19e3ff; letter-spacing: .5px; text-shadow: 0 0 8px rgba(25,227,255,.6); }
 .bb-tag i { width: 6px; height: 6px; border-radius: 50%; background: #ff2e88; box-shadow: 0 0 8px #ff2e88; animation: blink 1.2s steps(2) infinite; }
 .bb-t { font-family: var(--hd); font-weight: 600; font-size: 16.5px; padding-inline-end: 26px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bb-t { animation: bbin .6s var(--ease); }
+.bb-b { font-size: 12.5px; color: rgba(255,255,255,.7); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; padding-inline-end: 26px; animation: bbin .7s var(--ease); }
+@keyframes bbin { from { opacity: 0; transform: translateY(8px); filter: blur(4px); } }
+.bboard.big { margin-top: 12px; padding: 16px 16px 12px; min-height: 112px; align-content: start; }
+.bboard.big .bb-t { font-size: 18px; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.bb-dots { display: flex; gap: 4px; margin-top: 6px; }
+.bb-dots i { width: 6px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.25); transition: width .4s var(--ease), background .4s; }
+.bb-dots i.on { width: 18px; background: linear-gradient(90deg, #19e3ff, #ff2e88); box-shadow: 0 0 8px rgba(25,227,255,.6); }
 .bb-run { overflow: hidden; font-size: 11.5px; color: rgba(255,255,255,.55); -webkit-mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent); mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent); }
 .bb-run span { display: inline-block; white-space: nowrap; animation: marquee 22s linear infinite; padding-inline-start: 100%; }
 .bb-go { position: absolute; left: 14px; top: 18px; transform: scaleX(-1); color: rgba(255,255,255,.6); }
