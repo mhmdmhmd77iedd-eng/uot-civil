@@ -9,6 +9,7 @@ const initial = {
   profile: null, // { branch, stage, shift, name }
   theme: 'auto',
   admin: false,
+  realProfile: null, // شعبة المطوّر الأصلية لما يعاين شعبة ثانية
   grades: {}, // courseId -> { saee, mid }
   requests: [], // { id, course, type, note, votes, mine, done, at }
   likes: {}, // announcementId -> true

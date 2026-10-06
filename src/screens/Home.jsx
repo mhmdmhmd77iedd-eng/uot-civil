@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useStore } from '../lib/store'
 import { coursesFor, courseById } from '../data/catalog'
 import { DEFAULT_ANNOUNCEMENTS, DEFAULT_EXAMS } from '../data/content'
+import { ViewAs } from '../components/ViewAs'
 import { label, greeting, currentSemester } from '../lib/profile'
 import { tap } from '../components/ui'
 import { I, HUES, Bridge } from '../components/icons'
@@ -68,6 +69,7 @@ export default function Home({ nav }) {
         </div>
         <img className="logo" src="icons/icon-192.png" alt="المدني" />
       </div>
+      <ViewAs />
 
       {next ? (
         <div className={`hero ${examMode ? 'exam' : ''}`} role="button" style={{ cursor: 'pointer' }} onClick={() => next.course && nav('course', { id: next.course })}>
