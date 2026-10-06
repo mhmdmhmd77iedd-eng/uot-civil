@@ -23,9 +23,9 @@ function CourseSelect({ value, onChange, profile }) {
   )
 }
 
-function ClassForm({ init, defDay, profile, onDone }) {
+function ClassForm({ init, defDay, profile, onDone, course0 }) {
   const toast = useToast()
-  const [f, setF] = useState(init || { course: '', kind: 'نظري', day: defDay ?? Math.min(dayIdx(), 5), start: '08:30', end: '10:30', room: '', prof: '' })
+  const [f, setF] = useState(init || { course: course0 || '', kind: 'نظري', day: defDay ?? Math.min(dayIdx(), 5), start: '08:30', end: '10:30', room: '', prof: '' })
   const ok = f.course && f.start && f.end && toMin(f.end) > toMin(f.start)
   function save() {
     tap()
@@ -137,7 +137,7 @@ function ClassInfo({ c, nav, onEdit, onClose }) {
   )
 }
 
-export default function Schedule({ nav, tab: tab0 }) {
+export default function Schedule({ nav, tab: tab0, addFor }) {
   const s = useStore()
   const toast = useToast()
   const now = useMinute()
@@ -145,7 +145,7 @@ export default function Schedule({ nav, tab: tab0 }) {
   const [tab, setTab] = useState(tab0 || 'today')
   const [day, setDay] = useState(Math.min(today, 5))
   const [showDone, setShowDone] = useState(false)
-  const [edit, setEdit] = useState(null) // { kind:'class'|'task'|'info', item }
+  const [edit, setEdit] = useState(addFor ? { kind: 'class', isNew: true, course: addFor } : null) // { kind:'class'|'task'|'info', item }
   const [perm, setPerm] = useState(notifySupported() ? Notification.permission : 'unsupported')
   const dates = weekDates(now)
   const tasks = s.tasks.filter((t) => (showDone ? t.done : !t.done)).sort((a, b) => (showDone ? dueAt(b) - dueAt(a) : dueAt(a) - dueAt(b)))
@@ -254,7 +254,7 @@ export default function Schedule({ nav, tab: tab0 }) {
 
       <Sheet open={!!edit} onClose={() => setEdit(null)} title={edit?.kind === 'info' ? 'المحاضرة' : edit?.kind === 'class' ? (edit.isNew ? 'محاضرة جديدة' : 'تعديل المحاضرة') : edit?.isNew ? 'كوز أو تسليم جديد' : 'تعديل الموعد'}>
         {edit?.kind === 'info' && <ClassInfo c={edit.item} nav={nav} onClose={() => setEdit(null)} onEdit={() => setEdit({ kind: 'class', item: edit.item })} />}
-        {edit?.kind === 'class' && <ClassForm init={edit.isNew ? null : edit.item} defDay={tab === 'week' ? day : Math.min(today, 5)} key={edit.item?.id || 'new' + day} profile={s.profile} onDone={() => setEdit(null)} />}
+        {edit?.kind === 'class' && <ClassForm init={edit.isNew ? null : edit.item} defDay={tab === 'week' ? day : Math.min(today, 5)} key={edit.item?.id || 'new' + day} profile={s.profile} course0={edit.course} onDone={() => setEdit(null)} />}
         {edit?.kind === 'task' && <TaskForm init={edit.isNew ? null : edit.item} key={edit.item?.id || 'newt'} profile={s.profile} onDone={() => setEdit(null)} />}
       </Sheet>
     </div>

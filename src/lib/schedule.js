@@ -116,6 +116,19 @@ export function checkReminders(now = new Date()) {
       show(`اليوم عندك ${what}`, `${t.title}${t.time ? ' · ' + fmtTime(t.time) : ''}`, t.id + ':0'); sent[t.id + ':0'] = 1; sent[t.id + ':1'] = 1; changed = true
     }
   }
+  // امتحانات الجدول المنشور (ومعها امتحانات المواد المحمّلة مع مراحلها): قبل 3 أيام، وقبل يوم، وصباح اليوم
+  const ST = ['', 'الأولى', 'الثانية', 'الثالثة', 'الرابعة']
+  for (const e of s.srvExams || []) {
+    const d = new Date(e.starts_at)
+    const n = Math.round((new Date(ymd(d)) - new Date(ymd(now))) / 864e5), h = now.getHours()
+    const cn = courseName(e.course_id, 'مادة')
+    const extra = e.carried ? ` · مادة محمّلة، تمتحن مع المرحلة ${ST[e.stage]}` : ''
+    const at = `${fmtTime(d.toTimeString().slice(0, 5))}${e.room ? ' · قاعة ' + e.room : ''}${extra}`
+    const k = 'x' + e.id
+    if (n === 3 && h >= 8 && !sent[k + ':3']) { show(`بعد 3 أيام امتحان ${cn}`, at, k + ':3'); sent[k + ':3'] = 1; changed = true }
+    if (n === 1 && h >= 8 && !sent[k + ':1']) { show(`باجر امتحان ${cn}`, at, k + ':1'); sent[k + ':1'] = sent[k + ':3'] = 1; changed = true }
+    if (n === 0 && h >= 7 && !sent[k + ':0']) { show(`اليوم امتحان ${cn}`, at, k + ':0'); sent[k + ':0'] = sent[k + ':1'] = sent[k + ':3'] = 1; changed = true }
+  }
   if (changed) setState({ notified: sent })
 }
 

@@ -138,6 +138,14 @@ export function coursesFor(profile) {
 }
 
 // مواد الطالب بفصل معيّن، مربوطة بخطة الوحدات: نشيل المادة اللي شالها من الخطة ونضيف المحمّلة
+// المواد المحمّلة على الطالب (من كل الفصول)
+export function carriedIds(profile, plan) {
+  if (!plan || !profile) return []
+  if (plan.carried) return plan.carried
+  const all = [...(plan[1] || []), ...(plan[2] || [])]
+  return COURSES.filter((c) => c.stage < profile.stage && all.includes(c.id)).map((c) => c.id)
+}
+
 export function semCourses(profile, plan, sem) {
   const base = coursesFor(profile).filter((c) => c.sem === sem)
   if (!plan) return base

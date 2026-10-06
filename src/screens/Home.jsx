@@ -24,7 +24,7 @@ export default function Home({ nav }) {
   const now = nowD.getTime()
   // الامتحان القادم: من جدول الامتحانات المنشور أو امتحانات كتبها الطالب بجدولي
   const fromTasks = s.tasks.filter((t) => t.type === 'exam' && !t.done).map((t) => ({ course: t.course, title: t.title, kind: 'امتحان', date: `${t.due}T${t.time || '08:30'}` }))
-  const fromSrv = (s.srvExams || []).map((e) => ({ course: e.course_id, kind: e.kind, date: e.starts_at, room: e.room }))
+  const fromSrv = (s.srvExams || []).map((e) => ({ course: e.course_id, kind: e.carried ? `${e.kind} · مادة محمّلة` : e.kind, date: e.starts_at, room: e.room }))
   const exams = [...fromSrv, ...fromTasks].filter((e) => new Date(e.date).getTime() > now).sort((x, y) => new Date(x.date) - new Date(y.date))
   const next = exams[0]
   const days = next ? (new Date(next.date).getTime() - now) / 864e5 : 99

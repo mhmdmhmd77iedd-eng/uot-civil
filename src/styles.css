@@ -771,3 +771,15 @@ button.prod:active { transform: scale(.96); }
 :root[data-world='neo'] .screen { animation: neoin .55s var(--ease) both; }
 @keyframes neoin { from { opacity: 0; translate: 0 14px; filter: blur(6px) hue-rotate(40deg); } to { opacity: 1; translate: 0 0; filter: none; } }
 @media (prefers-reduced-motion: reduce) { :root[data-world='neo'] body::before, :root[data-world='neo'] body::after { animation: none; } }
+.attempts { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--mu); background: var(--sf2); border-radius: 12px; padding: 6px 10px; --c: var(--ac); }
+.attempts.warn { --c: var(--mid); } .attempts.last { --c: var(--bad); }
+.attempts .stepper { gap: 6px; } .attempts .stepper button { width: 28px; height: 28px; border-radius: 9px; } .attempts .stepper b { font-size: 17px; min-width: 18px; color: var(--c); }
+.attempts .dots { display: flex; gap: 3px; } .attempts .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--ln); transition: background .3s; } .attempts .dots i.on { background: var(--c); }
+.attempts em { font-style: normal; font-weight: 700; color: var(--c); margin-inline-start: auto; }
+.xcar { margin-bottom: 14px; display: grid; gap: 6px; box-shadow: var(--sh), inset 0 0 0 1.5px color-mix(in srgb, var(--mid) 35%, transparent); }
+.xcar-h { display: flex; align-items: center; gap: 8px; color: var(--mid); }
+.xcar-h b { color: var(--tx); flex: 1; }
+.xcar-r { display: flex; align-items: center; justify-content: space-between; gap: 8px; border: none; background: var(--sf2); border-radius: 12px; padding: 8px 10px; cursor: pointer; text-align: right; color: var(--tx); font: inherit; }
+.xcar-r .t { display: grid; font-weight: 600; font-size: 13.5px; }
+.xcar-r small { font-weight: 400; font-size: 11px; color: var(--mu); }
+.xcar-r .pill { flex: none; font-size: 11px; }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useStore } from '../lib/store'
 import { useAcct, canPostExam, saveExam, deleteExam, fetchExams } from '../lib/sb'
-import { coursesFor, courseById, COURSES } from '../data/catalog'
+import { coursesFor, courseById, COURSES, carriedIds, STAGES } from '../data/catalog'
 import { label } from '../lib/profile'
 import { dateLong, fmtTime, ymd } from '../lib/schedule'
 import { courseHue } from '../lib/look'
@@ -68,6 +68,11 @@ export default function Exams({ back, nav }) {
   if (tab === 'past') list.reverse()
   const groups = list.reduce((m, e) => ((m[dayKey(e.starts_at)] ||= []).push(e), m), {})
   const next = all.find((e) => e.n >= 0)
+  // المواد المحمّلة: موعد امتحانها مع مرحلتها، وتنبيه إذا يتعارض مع امتحان من مرحلتي
+  const car = carriedIds(s.profile, s.plan).map((id) => courseById[id]).filter(Boolean)
+  const exOnly = new Set(s.plan?.examOnly || [])
+  const clash = (e) => all.some((x) => x.id !== e.id && x.carried !== e.carried && Math.abs(new Date(x.starts_at) - new Date(e.starts_at)) < 3 * 36e5)
+  const stName = (n) => STAGES.find((x) => x.id === n)?.name
 
   return (
     <div className="screen">
@@ -84,6 +89,23 @@ export default function Exams({ back, nav }) {
           </div>
           <span className="xn-go"><I n="paper" size={16} />الأسئلة السابقة</span>
         </button>
+      )}
+
+      {car.length > 0 && tab === 'next' && (
+        <div className="card xcar">
+          <div className="xcar-h"><I n="flag" size={17} /><b>موادك المحمّلة</b><button className="btn ghost sm" onClick={() => nav('map', { tab: 'plan' })}>تعديل</button></div>
+          {car.map((c) => {
+            const e = all.find((x) => x.course_id === c.id && x.n >= 0)
+            const att = s.plan?.attempts?.[c.id]
+            return (
+              <button key={c.id} className="xcar-r" onClick={() => nav('course', { id: c.id, type: 'past' })}>
+                <span className="t">{c.name}<small>{exOnly.has(c.id) ? `امتحان فقط${att ? ` · الدور ${att} من 6` : ''}` : 'دوام وامتحان'} · مع {stName(c.stage)}</small></span>
+                <span className={`pill ${e ? (e.n <= 3 ? 'urgent' : '') : 'off'}`}>{e ? `${dateLong(new Date(e.starts_at))} · ${fmtTime(new Date(e.starts_at).toTimeString().slice(0, 5))}` : 'ما انشر موعده بعد'}</span>
+              </button>
+            )
+          })}
+          <div className="small muted" style={{ marginTop: 6 }}>أول ما ينشر ممثل المرحلة السابقة موعد امتحان مادتك، يطلع هنا ويوصلك تنبيه قبل 3 أيام وقبل يوم وصباح الامتحان.</div>
+        </div>
       )}
 
       <div className="seg">
@@ -103,6 +125,8 @@ export default function Exams({ back, nav }) {
                   <span style={{ minWidth: 0, flex: 1 }}>
                     <span className="t">{c?.name || e.course_id}</span>
                     <span className="m">{e.kind}{e.room ? ` · قاعة ${e.room}` : ''}{e.note ? ` · ${e.note}` : ''}</span>
+                    {e.carried && <span className="tg w" style={{ marginTop: 3 }}>محمّلة · مع {stName(e.stage)}</span>}
+                    {clash(e) && <span className="tg b" style={{ marginTop: 3, marginInlineStart: 4 }}><I n="warn" size={12} />قريب من امتحان ثاني، راجع القسم</span>}
                   </span>
                   <I n={can ? 'pencil' : 'chev'} size={17} className="chev" />
                 </button>

@@ -1,4 +1,5 @@
 // الربط مع الخادم (Supabase). المفتاح العام آمن داخل التطبيق لأن قواعد الحماية بالخادم هي اللي تقرر
+import { carriedIds } from '../data/catalog'
 import { createClient } from '@supabase/supabase-js'
 import { useSyncExternalStore } from 'react'
 import { getState, setState } from './store'
@@ -215,11 +216,18 @@ export async function deleteAnnouncement(id) {
 
 // ===== جدول الامتحانات =====
 export async function fetchExams() {
-  const p = getState().profile
+  const st = getState(), p = st.profile
   if (!p?.stage) return
-  const { data, error } = await sb.from('exams').select('*').eq('stage', p.stage).order('starts_at')
-  if (error || !data) return
-  setState({ srvExams: data.filter((e) => (!e.branch || p.stage < 2 || e.branch === p.branch) && (!e.shift || e.shift === p.shift)) })
+  // امتحانات مرحلتي + امتحانات موادي المحمّلة مع مراحلها السابقة
+  const car = carriedIds(p, st.plan)
+  const reqs = [sb.from('exams').select('*').eq('stage', p.stage).order('starts_at')]
+  if (car.length) reqs.push(sb.from('exams').select('*').lt('stage', p.stage).in('course_id', car).order('starts_at'))
+  const res = await Promise.all(reqs)
+  if (res[0].error) return
+  const ok = (e) => (!e.branch || e.stage < 2 || e.branch === p.branch) && (!e.shift || e.shift === p.shift)
+  const own = (res[0].data || []).filter(ok)
+  const extra = (res[1]?.data || []).filter(ok).map((e) => ({ ...e, carried: true }))
+  setState({ srvExams: [...own, ...extra].sort((x, y) => new Date(x.starts_at) - new Date(y.starts_at)) })
 }
 export const canPostExam = (a = acct) => isStageRep(a) || a.roles.some((r) => r.role === 'rep')
 export async function saveExam(e) {

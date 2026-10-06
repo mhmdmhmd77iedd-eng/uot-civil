@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { fetchExams } from '../lib/sb'
 import { useStore, setState } from '../lib/store'
 import { PREREQS, COURSES, STAGES, ELECTIVE_SLOTS, courseById, before, after, blockedBy, coursesFor } from '../data/catalog'
 import { currentSemester } from '../lib/profile'
@@ -20,6 +21,21 @@ function needs(id, seen = new Set()) { for (const n of before(id)) if (!seen.has
 // المواد الداخلة بالمتطلبات مرتبة حسب المرحلة والفصل
 const LINKED = [...new Set(PREREQS.flat())].map((id) => courseById[id]).filter(Boolean)
 const BY_STAGE = STAGES.map((st) => ({ st, sems: [1, 2].map((sm) => LINKED.filter((c) => c.stage === st.id && c.sem === sm)) })).filter((x) => x.sems[0].length + x.sems[1].length)
+
+// «امتحان فقط»: الطالب يكدر يمتحن المادة لحد 6 أدوار
+export const MAX_ATTEMPTS = 6
+function Attempts({ id, n }) {
+  const set = (v) => { tap(); setState((s) => ({ plan: { ...s.plan, attempts: { ...(s.plan?.attempts || {}), [id]: Math.min(MAX_ATTEMPTS, Math.max(1, v)) } } })) }
+  const left = MAX_ATTEMPTS - n
+  return (
+    <div className={`attempts ${left === 0 ? 'last' : left <= 1 ? 'warn' : ''}`}>
+      <span>هذا الدور رقم</span>
+      <div className="stepper"><button onClick={() => set(n - 1)} aria-label="نقص"><I n="minus" size={14} /></button><b>{n}</b><button onClick={() => set(n + 1)} aria-label="زيد"><I n="plus" size={14} /></button></div>
+      <span className="dots">{Array.from({ length: MAX_ATTEMPTS }, (_, i) => <i key={i} className={i < n ? 'on' : ''} />)}</span>
+      <em>{left === 0 ? 'آخر دور' : `باقي ${left}`}</em>
+    </div>
+  )
+}
 
 export const MAX_UNITS = 30 // الحد الأعلى للتسجيل بالفصل (أكده عبدالله)
 
@@ -52,6 +68,7 @@ function Plan({ profile, plan, nav }) {
     tap()
     const n = new Set(carriedIds); n.has(id) ? n.delete(id) : n.add(id)
     setState((s) => ({ plan: { ...s.plan, carried: [...n] } }))
+    fetchExams().catch(() => {})
   }
   const exOnly = new Set(plan?.examOnly || [])
   const setEx = (id, v) => { tap(); const n = new Set(exOnly); v ? n.add(id) : n.delete(id); setState((s) => ({ plan: { ...s.plan, examOnly: [...n] } })) }
@@ -99,6 +116,8 @@ function Plan({ profile, plan, nav }) {
             <button className={!exOnly.has(c.id) ? 'on' : ''} onClick={() => setEx(c.id, false)}>دوام وامتحان</button>
             <button className={exOnly.has(c.id) ? 'on' : ''} onClick={() => setEx(c.id, true)}>امتحان فقط</button>
           </div>
+          {exOnly.has(c.id) ? <Attempts id={c.id} n={plan?.attempts?.[c.id] || 1} />
+            : <button className="linkrow" onClick={() => { tap(); nav('schedule', { tab: 'week', addFor: c.id }) }}><I n="week" size={17} />أضف محاضراتها لجدولي (دوامها ويا {STAGES.find((x) => x.id === c.stage)?.name})</button>}
         </div>
       ))}</div>}
       {carriedOther.length > 0 && <p className="small muted" style={{ margin: '0 4px 10px' }}>وعندك محمّلة بال{sem === 1 ? 'فصل الثاني' : 'فصل الأول'}: {carriedOther.map((c) => c.name).join('، ')}.</p>}
