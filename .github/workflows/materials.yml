@@ -1,0 +1,34 @@
+# ينقل ملفات الملازم من فروع upload/* إلى إصدارات GitHub (Release لكل مادة) ثم يحذف الفرع
+name: materials
+on:
+  push:
+    branches: ['upload/**']
+permissions:
+  contents: write
+concurrency:
+  group: materials
+  cancel-in-progress: false
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 1
+      - name: upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          # الملفات الكبيرة مقسومة إلى أجزاء name.part-xx ، نرجعها ملف واحد
+          for f in $(find files -name '*.part-aa'); do
+            base="${f%.part-aa}"; cat "$base".part-* > "$base"; rm "$base".part-*
+          done
+          for dir in files/*/; do
+            course=$(basename "$dir"); tag="m-$course"
+            gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --title "ملفات $course" --notes "ملازم وأسئلة مادة $course لتطبيق المدني" --latest=false --target main
+            gh release upload "$tag" "$dir"* --clobber
+          done
+      - name: delete branch
+        run: git push origin --delete "${GITHUB_REF#refs/heads/}"
