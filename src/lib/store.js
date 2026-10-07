@@ -3,7 +3,9 @@ import { useSyncExternalStore } from 'react'
 
 const KEY = 'almadani:v1'
 const BK = 'almadani:backups'
-export const VERSION = '1.7.0'
+// العوالم الكاملة اللي يختارها الطالب من «حسابي»
+export const WORLDS = ['neo', 'babel']
+export const VERSION = '1.8.0'
 
 const initial = {
   profile: null, // { branch, stage, shift, name }

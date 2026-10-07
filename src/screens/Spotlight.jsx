@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useStore, setState } from '../lib/store'
-import { useAcct, isVerified, canModAnn, pinAnnouncement, deleteAnnouncement, commentCounts, fetchBoards, sb } from '../lib/sb'
+import { useAcct, isVerified, canModAnn, pinAnnouncement, deleteAnnouncement, commentCounts, fetchBoards, fetchComments, sb } from '../lib/sb'
 import { STAGES } from '../data/catalog'
 import { label } from '../lib/profile'
 import { ago, dateLong } from '../lib/schedule'
@@ -11,6 +11,44 @@ import { Sheet, tap, useToast } from '../components/ui'
 import { soft } from '../lib/sound'
 
 const DUR = 7000
+const GAP = 1700
+
+// التعليقات الموافق عليها تطير فوق الإعلان مثل البث المباشر، والضغط عليها يفتح التعليقات
+function LiveComments({ ann, hold, onOpen, onHas }) {
+  const cache = useRef({})
+  const [list, setList] = useState([])
+  const [shown, setShown] = useState([])
+  const k = useRef(0)
+  useEffect(() => {
+    setShown([]); k.current = 0
+    if (!ann || ann.comments_on === false) { setList([]); return }
+    const hit = cache.current[ann.id]
+    if (hit) { setList(hit); return }
+    let dead = false
+    fetchComments(ann.id).then((d) => { if (dead) return; const ok = (d || []).filter((c) => c.status === 'approved').slice(-20); cache.current[ann.id] = ok; setList(ok) }).catch(() => {})
+    return () => { dead = true }
+  }, [ann?.id])
+  useEffect(() => {
+    if (hold || !list.length) return
+    const push = () => { const c = list[k.current % list.length]; const key = k.current++; setShown((a) => [...a.slice(-2), { key, c }]) }
+    if (!k.current) push()
+    const t = setInterval(push, list.length === 1 ? 5200 : GAP)
+    return () => clearInterval(t)
+  }, [list, hold])
+  useEffect(() => { onHas(list.length > 0) }, [list.length])
+  if (!list.length) return null
+  return (
+    <div className="sp-live">
+      {shown.map(({ key, c }) => (
+        <button key={key} className={`sp-bub h${key % 4}`} onClick={(e) => { e.stopPropagation(); onOpen() }}>
+          <span className="av">{(c.name || 'ط').trim()[0]}</span>
+          <span className="tx"><b>{c.name || 'طالب'}</b>{c.body}{c.reply && <em>رد: {c.reply}</em>}</span>
+        </button>
+      ))}
+      <span className="sp-livecount"><i />{list.length} تعليق مباشر</span>
+    </div>
+  )
+}
 const EN = { stage: 'STAGE NEWS', section: 'SECTION BOARD', general: 'COLLEGE' }
 
 // شاشة الإعلانات المميزة: لوحة ليلية مضيئة تتقلب وحدها، مثل شاشات الشوارع
@@ -27,6 +65,7 @@ export default function Spotlight({ back, nav, id }) {
   const [post, setPost] = useState(false)
   const [counts, setCounts] = useState({})
   const [paused, setPaused] = useState(false)
+  const [live, setLive] = useState(false)
   const t0 = useRef(Date.now())
   const x = slides[Math.min(i, slides.length - 1)]
   const hold = paused || cm || post
@@ -60,7 +99,7 @@ export default function Spotlight({ back, nav, id }) {
   const c = x ? counts[x.id] : null
 
   return (
-    <div className="spot" onPointerDown={() => setPaused(true)} onPointerUp={() => setPaused(false)} onPointerCancel={() => setPaused(false)}>
+    <div className={`spot ${live && x ? 'has-live' : ''}`} onPointerDown={() => setPaused(true)} onPointerUp={() => setPaused(false)} onPointerCancel={() => setPaused(false)}>
       <div className="sp-sky" /><div className="sp-floor" /><div className="sp-scan" />
 
       <div className="sp-top">
@@ -101,6 +140,8 @@ export default function Spotlight({ back, nav, id }) {
           </div>
         </div>
       )}
+
+      {x && <LiveComments ann={x} hold={hold} onHas={setLive} onOpen={() => { tap(); setCm(true) }} />}
 
       {x && (
         <div className="sp-actions">

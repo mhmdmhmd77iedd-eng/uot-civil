@@ -25,6 +25,8 @@ import News, { unseenCount } from './screens/News'
 import Exams from './screens/Exams'
 import DevPanel from './screens/DevPanel'
 import NeoLayer from './components/NeoLayer'
+import BabelLayer from './components/BabelLayer'
+import { WORLDS } from './lib/store'
 
 const TABS = [
   { id: 'home', n: 'الرئيسية', i: 'home' },
@@ -38,12 +40,12 @@ function useTheme(theme) {
   useEffect(() => {
     const mq = matchMedia('(prefers-color-scheme: dark)')
     const apply = () => {
-      // «طوكيو 2050» عالم ليلي كامل فوق الوضع الداكن
-      const neo = theme === 'neo'
-      const dark = neo || theme === 'dark' || (theme === 'auto' && mq.matches)
+      // العوالم («طوكيو 2050» و«بابل 3000») عوالم ليلية كاملة فوق الوضع الداكن
+      const world = WORLDS.includes(theme) ? theme : null
+      const dark = !!world || theme === 'dark' || (theme === 'auto' && mq.matches)
       document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-      if (neo) document.documentElement.dataset.world = 'neo'; else delete document.documentElement.dataset.world
-      document.querySelector('meta[name=theme-color]')?.setAttribute('content', neo ? '#06070f' : dark ? '#121518' : '#f7f5f0')
+      if (world) document.documentElement.dataset.world = world; else delete document.documentElement.dataset.world
+      document.querySelector('meta[name=theme-color]')?.setAttribute('content', world === 'neo' ? '#06070f' : world === 'babel' ? '#071430' : dark ? '#121518' : '#f7f5f0')
     }
     apply()
     mq.addEventListener('change', apply)
@@ -112,6 +114,7 @@ export default function App() {
     <ToastHost>
       <Watermark />
       <NeoLayer />
+      <BabelLayer />
       <div className="app">
         <S key={cur.name + JSON.stringify(cur.p)} {...props} />
         {!['home', 'quotes', 'spotlight'].includes(cur.name) && <QuoteBand seed={cur.name} nav={nav} />}

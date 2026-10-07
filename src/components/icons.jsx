@@ -254,8 +254,16 @@ const P = {
 
 export function I({ n, size = 22, className = '', style }) {
   const p = P[n] || P.info
-  const neo = useStore((s) => s.theme === 'neo')
-  if (neo) {
+  const world = useStore((s) => (s.theme === 'neo' || s.theme === 'babel' ? s.theme : null))
+  if (world === 'babel') {
+    // بابل 3000: نفس الرسم الهندسي بخط ذهبي واحد مضيء
+    return (
+      <svg className={'i i-bab ' + className} style={style} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {NP[n] || p.s}
+      </svg>
+    )
+  }
+  if (world === 'neo') {
     // طوكيو 2050: خط حاد مع ظل لوني مزدوج (وردي وسماوي) مثل الشاشات المضيئة
     const g = NP[n] || p.s
     return (

@@ -1,6 +1,6 @@
 import { boot } from '../lib/sound'
 import { useRef, useState } from 'react'
-import { useStore, setState, exportBackupFile, importBackupFile, listBackups, restoreData, VERSION } from '../lib/store'
+import { useStore, setState, exportBackupFile, importBackupFile, listBackups, restoreData, VERSION, WORLDS } from '../lib/store'
 import { label } from '../lib/profile'
 import { DEV, APP_NAME, DISCLAIMER } from '../lib/brand'
 import { I, HUES } from '../components/icons'
@@ -33,6 +33,7 @@ export function DevCard({ nav }) {
 
 export default function Settings({ nav }) {
   const s = useStore()
+  const isWorld = WORLDS.includes(s.theme)
   const toast = useToast()
   const file = useRef()
   const [bk, setBk] = useState(false)
@@ -65,16 +66,20 @@ export default function Settings({ nav }) {
 
       <div className="sec">عالم التطبيق</div>
       <div className="worlds">
-        <button className={`world w-classic ${s.theme !== 'neo' ? 'on' : ''}`} onClick={() => { tap(); if (s.theme === 'neo') setState({ theme: 'auto' }) }}>
+        <button className={`world w-classic ${!isWorld ? 'on' : ''}`} onClick={() => { tap(); if (isWorld) setState({ theme: 'auto' }) }}>
           <span className="wp"><i /><i /><i /></span>
           <b>المدني</b><span>ورق هندسي هادئ، فاتح أو ليلي</span>
         </button>
-        <button className={`world w-neo ${s.theme === 'neo' ? 'on' : ''}`} onClick={() => { tap(); if (s.theme !== 'neo') setTimeout(boot, 80); setState({ theme: 'neo' }) }}>
+        <button className={`world w-neo ${s.theme === 'neo' ? 'on' : ''}`} onClick={() => { tap(); if (s.theme !== 'neo') { setState({ theme: 'neo' }); setTimeout(boot, 80) } }}>
           <span className="wp"><i /><i /><i /></span>
           <b>طوكيو 2050</b><span>مدينة ليلية بأضواء نيون</span>
         </button>
+        <button className={`world w-babel ${s.theme === 'babel' ? 'on' : ''}`} onClick={() => { tap(); if (s.theme !== 'babel') { setState({ theme: 'babel' }); setTimeout(boot, 80) } }}>
+          <span className="wp"><i /><i /><i /></span>
+          <b>بابل ٣٠٠٠</b><span>بوابة عشتار بالمستقبل: لازوردي وذهب</span>
+        </button>
       </div>
-      {s.theme !== 'neo' && <div className="tabs">{themes.map((t) => <button key={t.id} className={s.theme === t.id ? 'on' : ''} onClick={() => { tap(); setState({ theme: t.id }) }}>{t.n}</button>)}</div>}
+      {!isWorld && <div className="tabs">{themes.map((t) => <button key={t.id} className={s.theme === t.id ? 'on' : ''} onClick={() => { tap(); setState({ theme: t.id }) }}>{t.n}</button>)}</div>}
       <label className="switchrow"><span>أصوات النقر</span><input type="checkbox" className="sw" checked={s.sound !== false} onChange={(e) => setState({ sound: e.target.checked })} /></label>
 
       <div className="sec">التطبيق</div>

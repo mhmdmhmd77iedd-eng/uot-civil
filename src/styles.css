@@ -783,3 +783,26 @@ button.prod:active { transform: scale(.96); }
 .xcar-r .t { display: grid; font-weight: 600; font-size: 13.5px; }
 .xcar-r small { font-weight: 400; font-size: 11px; color: var(--mu); }
 .xcar-r .pill { flex: none; font-size: 11px; }
+/* التعليقات المباشرة فوق شاشة الإعلانات */
+.sp-live { position: absolute; z-index: 3; inset-inline-start: 14px; bottom: calc(118px + env(safe-area-inset-bottom)); width: min(78%, 420px); height: 46%; pointer-events: none; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 8px; overflow: hidden; -webkit-mask-image: linear-gradient(transparent, #000 30%); mask-image: linear-gradient(transparent, #000 30%); }
+.sp-bub { --c: var(--cy); pointer-events: auto; display: flex; align-items: flex-start; gap: 8px; max-width: 100%; border: none; cursor: pointer; text-align: right; font: inherit; color: #eef3ff; padding: 7px 12px 7px 9px; border-radius: 18px 18px 18px 6px; background: linear-gradient(120deg, rgba(10, 12, 28, .82), rgba(20, 24, 48, .72)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 55%, transparent), 0 0 18px -6px var(--c); animation: bubin .55s var(--spring) both, bubout .8s 6.2s ease-in forwards; }
+.sp-bub.h1 { --c: var(--pk); } .sp-bub.h2 { --c: var(--gd); } .sp-bub.h3 { --c: var(--tl); }
+.sp-bub .av { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #05060c; background: var(--c); box-shadow: 0 0 10px var(--c); }
+.sp-bub .tx { font-size: 13px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.sp-bub .tx b { color: var(--c); font-size: 11.5px; margin-inline-end: 6px; }
+.sp-bub .tx em { display: block; font-style: normal; font-size: 11.5px; color: var(--gd); }
+.sp-bub:active { transform: scale(.96); }
+.sp-livecount { pointer-events: none; display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; letter-spacing: .5px; color: rgba(238, 243, 255, .7); padding: 2px 4px; }
+.sp-livecount i { width: 7px; height: 7px; border-radius: 50%; background: var(--pk); box-shadow: 0 0 8px var(--pk); animation: blink 1.2s steps(2) infinite; }
+@keyframes bubin { from { opacity: 0; transform: translateY(30px) scale(.8); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes bubout { to { opacity: 0; transform: translateY(-24px); } }
+@keyframes blink { 50% { opacity: .2; } }
+@media (prefers-reduced-motion: reduce) { .sp-bub { animation: none; } }
+.spot.has-live .sp-stage { align-items: start; padding-bottom: 196px; }
+.spot.has-live .sp-count { display: none; }
+.spot.has-live .sp-live { height: 184px; bottom: calc(126px + env(safe-area-inset-bottom)); }
+.worlds { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.worlds .world { padding: 8px 9px 10px; }
+.worlds .world .wp { height: 54px; }
+.worlds .world b { font-size: 13.5px; }
+.worlds .world > span:last-child { font-size: 10.5px; line-height: 1.45; }
