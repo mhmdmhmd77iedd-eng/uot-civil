@@ -125,9 +125,10 @@ export const ELECTIVE_SLOTS = { '3-2': [4, 4], '4-1': [6], '4-2': [5, 8] }
 
 export const courseById = Object.fromEntries(COURSES.map((x) => [x.id, x]))
 
-// فروع تدرس مادة بفصل غير اللي بالمخطط العام (من جدول الشعبة الرسمي)
-// الموارد المائية، المرحلة الثالثة 2026-2027: الطرق بالفصل الأول، وميكانيك التربة بالثاني
-export const SEM_OVERRIDE = { wat: { HITE322: 1, SOME312: 2 } }
+// مواد تندرس بفصل غير اللي بالمخطط العام (من جداول الأقسام الرسمية)
+// المرحلة الثالثة 2026-2027، كل الفروع الستة: الطرق بالفصل الأول، وميكانيك التربة بالثاني
+const S3 = { HITE322: 1, SOME312: 2 }
+export const SEM_OVERRIDE = { str: S3, cem: S3, san: S3, hwy: S3, wat: S3, geo: S3 }
 
 export function coursesFor(profile) {
   if (!profile) return []

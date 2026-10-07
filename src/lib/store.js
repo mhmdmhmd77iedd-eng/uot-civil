@@ -5,7 +5,7 @@ const KEY = 'almadani:v1'
 const BK = 'almadani:backups'
 // العوالم الكاملة اللي يختارها الطالب من «حسابي»
 export const WORLDS = ['neo', 'diary']
-export const VERSION = '1.9.5'
+export const VERSION = '1.9.6'
 
 const initial = {
   profile: null, // { branch, stage, shift, name }
