@@ -32,7 +32,7 @@ const TABS = [
   { id: 'home', n: 'الرئيسية', i: 'home' },
   { id: 'schedule', n: 'جدولي', i: 'week' },
   { id: 'library', n: 'المكتبة', i: 'books' },
-  { id: 'news', n: 'الإعلانات', i: 'bell' },
+  { id: 'news', n: 'الإعلانات', i: 'megaphone' },
   { id: 'settings', n: 'حسابي', i: 'user' },
 ]
 

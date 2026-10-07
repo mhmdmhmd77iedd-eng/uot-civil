@@ -76,7 +76,7 @@ export default function Settings({ nav }) {
         </button>
         <button className={`world w-babel ${s.theme === 'babel' ? 'on' : ''}`} onClick={() => { tap(); if (s.theme !== 'babel') { setState({ theme: 'babel' }); setTimeout(boot, 80) } }}>
           <span className="wp"><i /><i /><i /></span>
-          <b>بابل ٣٠٠٠</b><span>بوابة عشتار بالمستقبل: لازوردي وذهب</span>
+          <b>بابل</b><span>بوابة عشتار وأسود شارع الموكب</span>
         </button>
       </div>
       {!isWorld && <div className="tabs">{themes.map((t) => <button key={t.id} className={s.theme === t.id ? 'on' : ''} onClick={() => { tap(); setState({ theme: t.id }) }}>{t.n}</button>)}</div>}

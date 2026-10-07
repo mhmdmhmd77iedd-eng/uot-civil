@@ -1,5 +1,6 @@
 import { useStore } from '../lib/store'
 import { NP } from './neoIcons'
+import { BP } from './babelIcons'
 // أيقونات المدني: خط واحد متناسق (1.7) مع طبقة لونية خفيفة (duotone)
 // f = الجزء المظلل الخفيف، s = الخطوط
 const P = {
@@ -256,10 +257,12 @@ export function I({ n, size = 22, className = '', style }) {
   const p = P[n] || P.info
   const world = useStore((s) => (s.theme === 'neo' || s.theme === 'babel' ? s.theme : null))
   if (world === 'babel') {
-    // بابل 3000: نفس الرسم الهندسي بخط ذهبي واحد مضيء
+    // بابل: أيقونات من آثار بابل نفسها، بنقش بارز مثل حيوانات بوابة عشتار
+    const b = BP[n] || p
     return (
-      <svg className={'i i-bab ' + className} style={style} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        {NP[n] || p.s}
+      <svg className={'i i-bab ' + className} style={style} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {b.f && <g fill="currentColor" stroke="none" opacity=".24">{b.f}</g>}
+        {b.s}
       </svg>
     )
   }
