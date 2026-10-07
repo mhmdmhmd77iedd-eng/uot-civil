@@ -48,6 +48,8 @@ export default function Course({ id, type: type0, nav, back }) {
       // إذا محمّل للاستخدام بدون نت نفتحه من الذاكرة
       const b = f.stored && !navigator.onLine ? await offlineBlob(f.url) : null
       if (b) { const u = URL.createObjectURL(b); window.open(u, '_blank', 'noopener'); return setTimeout(() => URL.revokeObjectURL(u), 60000) }
+      // نفتح روابط http/https بس، حتى رابط خبيث مثل javascript: ما يشتغل
+      if (!/^https?:\/\//i.test(f.url || '')) return toast('الرابط مو صالح')
       return window.open(f.url, '_blank', 'noopener')
     }
     const blob = await getBlob(f.id).catch(() => null)
