@@ -5,7 +5,7 @@ import { COURSES, coursesFor } from '../data/catalog'
 import { DAYS, CLASS_KINDS, TASK_TYPES, taskType, uid, ymd, toMin, fmtTime, dueText, daysLeft, dueAt, courseName, weekDates, dayIdx, askNotify, notifySupported, checkReminders, upcomingTasks, dateLong } from '../lib/schedule'
 import { DayLine, useMinute } from '../components/Today'
 import { courseHue } from '../lib/look'
-import { timetableFor } from '../data/timetables'
+import { timetablesFor } from '../data/timetables'
 import { currentSemester } from '../lib/profile'
 import { useAcct, isRep, publishTask, deleteSrvTask } from '../lib/sb'
 import { I } from '../components/icons'
@@ -149,8 +149,10 @@ export default function Schedule({ nav, tab: tab0, addFor }) {
   const [perm, setPerm] = useState(notifySupported() ? Notification.permission : 'unsupported')
   const dates = weekDates(now)
   const tasks = s.tasks.filter((t) => (showDone ? t.done : !t.done)).sort((a, b) => (showDone ? dueAt(b) - dueAt(a) : dueAt(a) - dueAt(b)))
-  const tt = timetableFor(s.profile, currentSemester())
-  const ttImported = tt && s.ttKey === tt.key
+  const tts = timetablesFor(s.profile, currentSemester())
+  const [ttPick, setTtPick] = useState(0)
+  const tt = tts[ttPick] || tts[0]
+  const ttImported = tts.some((t) => s.ttKey === t.key)
   const hasSrv = s.classes.some((c) => c.src === 'srv')
   function importTT() {
     tap()
@@ -199,7 +201,9 @@ export default function Schedule({ nav, tab: tab0, addFor }) {
       {tab !== 'tasks' && tt && !ttImported && !hasSrv && (
         <div className="install" style={{ marginTop: 0, marginBottom: 14 }}>
           <span className="ic"><I n="week" size={22} /></span>
-          <div style={{ flex: 1, minWidth: 0 }}><b style={{ fontSize: 14 }}>جدول شعبتك جاهز</b><div className="small muted">{tt.classes.length} محاضرة بالأسبوع. تضيفه بضغطة.</div></div>
+          <div style={{ flex: 1, minWidth: 0 }}><b style={{ fontSize: 14 }}>جدول شعبتك جاهز</b><div className="small muted">{tt.classes.length} محاضرة بالأسبوع. {tts.length > 1 ? 'اختار شعبتك وأضفه.' : 'تضيفه بضغطة.'}</div>
+            {tts.length > 1 && <div className="chips" style={{ marginTop: 8 }}>{tts.map((t, i) => <button key={t.key} className={`chip ${t === tt ? 'on' : ''}`} onClick={() => { tap(); setTtPick(i) }}>شعبة {t.group}</button>)}</div>}
+          </div>
           <button className="btn warm sm" onClick={importTT}>أضفه</button>
         </div>
       )}
