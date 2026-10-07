@@ -42,6 +42,42 @@ function kal(f, vol, at = 0, dur = 0.9) {
     o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + 0.05)
   })
 }
+// صوت «جوجي» الكرتوني: صوت طفولي مولّد (مثل أصوات شخصيات ألعاب الأطفال)، مقطعين «جو» و«جي»
+// المصدر نغمة حنجرة عالية تمر على مرشحات الحروف المتحركة (الفورمانت)، والجيم همسة قصيرة
+const VOW = { o: [[560, 1, 6], [1060, 0.55, 8], [3300, 0.12, 10]], i: [[380, 1, 6], [2900, 0.45, 9], [3700, 0.2, 10]] }
+export function jojiVoice(c, out, at = 0) {
+  const t0 = c.currentTime + at
+  const syl = (v, start, dur, f1, f2) => {
+    const t = t0 + start
+    // الجيم: همسة «دج» قصيرة
+    const len = Math.round(c.sampleRate * 0.05), b = c.createBuffer(1, len, c.sampleRate), d = b.getChannelData(0)
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / len)
+    const n = c.createBufferSource(), nb = c.createBiquadFilter(), ng = c.createGain()
+    n.buffer = b; nb.type = 'bandpass'; nb.frequency.value = 3400; nb.Q.value = 2.2; ng.gain.value = 0.03
+    n.connect(nb).connect(ng).connect(out); n.start(t)
+    // الحرف المتحرك: حنجرة بنغمة طفولية تطلع لفوق، مع اهتزاز خفيف
+    const o = c.createOscillator(), vib = c.createOscillator(), vg = c.createGain(), env = c.createGain()
+    o.type = 'sawtooth'
+    o.frequency.setValueAtTime(f1, t + 0.04); o.frequency.exponentialRampToValueAtTime(f2, t + 0.04 + dur)
+    vib.frequency.value = 6.5; vg.gain.value = f1 * 0.018; vib.connect(vg).connect(o.frequency)
+    env.gain.setValueAtTime(0.0001, t + 0.03); env.gain.exponentialRampToValueAtTime(0.5, t + 0.07)
+    env.gain.setValueAtTime(0.5, t + dur - 0.02); env.gain.exponentialRampToValueAtTime(0.0001, t + 0.06 + dur)
+    o.connect(env)
+    VOW[v].forEach(([f, g, q]) => { const bp = c.createBiquadFilter(), fg = c.createGain(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = q; fg.gain.value = g * 3; env.connect(bp).connect(fg).connect(out) })
+    o.start(t + 0.03); vib.start(t + 0.03); o.stop(t + dur + 0.1); vib.stop(t + dur + 0.1)
+  }
+  syl('o', 0, 0.2, 400, 450)
+  syl('i', 0.24, 0.3, 560, 680)
+}
+// ترحيب «جوجي» عند فتح التطبيق؛ يرجّع false إذا المتصفح بعده مانع الصوت قبل أول لمسة
+export function hello() {
+  if (!on()) return true
+  const c = ac(); if (!c || c.state !== 'running') return false
+  try { air(0.7, 0.04, 900, 0, 3200); joji(0.35); kal(SOFT[6], 0.03, 1.05, 1.1) } catch {}
+  return true
+}
+const joji = (at = 0) => { const c = ac(); if (!c) return; const g = c.createGain(); g.gain.value = 0.3; g.connect(c.destination); jojiVoice(c, g, at) }
+
 // سلم خماسي (دو ري مي صول لا) بطبقة عالية رقيقة
 const SOFT = [1046.5, 1174.7, 1318.5, 1568, 1760, 2093, 2349.3]
 // فقاعة: نغمة جيبية قصيرة تطلع لفوق بنعومة
@@ -77,7 +113,8 @@ export function soft() {
 export function boot() {
   if (!on()) return
   try {
-    if (dia()) { air(0.9, 0.05, 900, 0, 3200); [2, 4, 5, 4, 6, 5].forEach((k, i) => kal(SOFT[k], 0.045, 0.5 + i * 0.22, 1.1)); return }
+    // «جوجي»: الترحيب بالصوت يجي من DiaryLayer، هنا بس لمعة كاليمبا
+    if (dia()) { [2, 4, 6].forEach((k, i) => kal(SOFT[k], 0.035, 0.9 + i * 0.12, 1.1)); return }
     tone(110, 880, 0.5, 0.035, 'sawtooth'); [523, 784, 1047, 1568].forEach((f, i) => tone(f, f, 0.18, 0.025, 'triangle', 0.25 + i * 0.07)) } catch {}
 }
 

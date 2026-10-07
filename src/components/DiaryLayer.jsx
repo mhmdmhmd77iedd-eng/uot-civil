@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useStore } from '../lib/store'
+import { hello } from '../lib/sound'
 
 // طبقة عالم «دفتري»: غلاف دفتر ينفتح عند الدخول، وملصق صغير يطلع مكان كل لمسة
 export const STICKERS = ['bow', 'heart', 'star', 'daisy', 'cherry', 'butterfly', 'strawberry', 'cloud', 'letter', 'pencil']
@@ -31,6 +32,7 @@ function Cover({ onDone }) {
 }
 
 let opened = false
+let greeted = false
 
 export default function DiaryLayer() {
   const on = useStore((s) => s.theme === 'diary')
@@ -39,6 +41,11 @@ export default function DiaryLayer() {
   useEffect(() => {
     if (!on) return
     if (!opened && !matchMedia('(prefers-reduced-motion: reduce)').matches) { opened = true; setCover(true) }
+    // «جوجي» يسلّم بصوته أول ما ينفتح التطبيق؛ إذا المتصفح مانع الصوت، يسلّم مع أول لمسة
+    if (!greeted) {
+      greeted = true
+      if (!hello()) addEventListener('pointerdown', () => setTimeout(hello, 30), { once: true, passive: true })
+    }
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
     // ملصق صغير ينلصق مكان اللمسة ويطير
     const onDown = (e) => {
