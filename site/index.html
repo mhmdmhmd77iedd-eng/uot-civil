@@ -6,6 +6,18 @@
     <title>المدني · UOT Civil</title>
     <meta name="description" content="كل ملازم وأسئلة وإعلانات طلاب الهندسة المدنية بالجامعة التكنولوجية بمكان واحد. تصميم وتطوير المهندس عبدالله أحمد باقر الساعدي." />
     <meta name="theme-color" content="#f7f5f0" />
+    <script>
+      // يطبّق ثيم الطالب قبل ما يشتغل التطبيق حتى ما تطلع ومضة بيضاء (نفس منطق src/lib/theme.js)
+      try {
+        var s = JSON.parse(localStorage.getItem('almadani:v1') || '{}'), t = s.theme || 'auto', de = document.documentElement
+        if (t === 'babel') t = 'diary'
+        var w = t === 'neo' || t === 'diary' ? t : null, m = w === 'diary' ? s.diaryNight || 'auto' : w === 'neo' ? 'dark' : t
+        var dk = m === 'dark' || (m === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches)
+        de.dataset.theme = dk ? 'dark' : 'light'
+        if (w) de.dataset.world = w
+        document.querySelector('meta[name=theme-color]').setAttribute('content', w === 'neo' ? '#06070f' : w === 'diary' ? (dk ? '#241a1d' : '#fbefed') : dk ? '#121518' : '#f7f5f0')
+      } catch (e) {}
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -20,8 +32,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <style>html,body{background:#f7f5f0}@media (prefers-color-scheme:dark){html,body{background:#121518}}</style>
-    <script type="module" crossorigin src="./assets/index-PPS66w2M.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-C2-BmZGP.css">
+    <script type="module" crossorigin src="./assets/index-BPsbTrpe.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CfOCQZlP.css">
   </head>
   <body>
     <div id="root"></div>
