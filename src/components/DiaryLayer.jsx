@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { useStore } from '../lib/store'
 
 // طبقة عالم «دفتري»: غلاف دفتر ينفتح عند الدخول، وملصق صغير يطلع مكان كل لمسة
-export const STICKERS = ['bow', 'heart', 'star', 'daisy', 'cherry', 'butterfly', 'strawberry', 'cloud', 'letter', 'pencil']
-const POPS = ['heart', 'star', 'daisy', 'bow', 'cherry', 'strawberry']
+export const STICKERS = ['bow', 'heart', 'star', 'daisy', 'flower', 'smile', 'sparkle', 'cherry', 'butterfly', 'strawberry', 'cloud', 'letter', 'pencil']
+const POPS = ['heart', 'sparkle', 'flower', 'bow', 'star', 'cherry']
 
 export const sticker = (n) => `diary/${n}.svg`
 
@@ -12,16 +12,16 @@ function Cover({ onDone }) {
   return (
     <div className="dia-cover" onClick={onDone} aria-hidden="true">
       <div className="book">
-        <div className="page"><span className="hand">let's study ♡</span></div>
+        <div className="page"><span className="hand">make something lovely</span></div>
         <div className="lid">
           <img className="s1" src={sticker('bow')} alt="" />
-          <img className="s2" src={sticker('daisy')} alt="" />
+          <img className="s2" src={sticker('flower')} alt="" />
           <img className="s3" src={sticker('cherry')} alt="" />
-          <img className="s4" src={sticker('star')} alt="" />
-          <img className="s5" src={sticker('butterfly')} alt="" />
+          <img className="s4" src={sticker('smile')} alt="" />
+          <img className="s5" src={sticker('sparkle')} alt="" />
           <div className="label">
             <b>جوجي</b>
-            <span className="hand">my study journal</span>
+            <span className="hand">my art journal</span>
           </div>
           <i className="tape" />
         </div>
