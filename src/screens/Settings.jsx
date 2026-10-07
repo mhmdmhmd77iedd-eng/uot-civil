@@ -76,7 +76,7 @@ export default function Settings({ nav }) {
         </button>
         <button className={`world w-diary ${s.theme === 'diary' ? 'on' : ''}`} onClick={() => { tap(); if (s.theme !== 'diary') { setState({ theme: 'diary' }); setTimeout(boot, 80) } }}>
           <span className="wp"><i /><i /><i /></span>
-          <b>دفتري</b><span>دفتر وردي بملصقات وشرائط</span>
+          <b>جوجي</b><span>دفتر وردي بملصقات وشرائط</span>
         </button>
       </div>
       {!isWorld && <div className="tabs">{themes.map((t) => <button key={t.id} className={s.theme === t.id ? 'on' : ''} onClick={() => { tap(); setState({ theme: t.id }) }}>{t.n}</button>)}</div>}

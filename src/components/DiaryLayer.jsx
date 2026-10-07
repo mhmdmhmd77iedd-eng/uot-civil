@@ -20,7 +20,7 @@ function Cover({ onDone }) {
           <img className="s4" src={sticker('star')} alt="" />
           <img className="s5" src={sticker('butterfly')} alt="" />
           <div className="label">
-            <b>دفتري</b>
+            <b>جوجي</b>
             <span className="hand">my study journal</span>
           </div>
           <i className="tape" />
