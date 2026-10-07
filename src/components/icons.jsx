@@ -1,6 +1,6 @@
 import { useStore } from '../lib/store'
 import { NP } from './neoIcons'
-import { BP } from './babelIcons'
+import { DP } from './diaryIcons'
 // أيقونات المدني: خط واحد متناسق (1.7) مع طبقة لونية خفيفة (duotone)
 // f = الجزء المظلل الخفيف، s = الخطوط
 const P = {
@@ -255,14 +255,13 @@ const P = {
 
 export function I({ n, size = 22, className = '', style }) {
   const p = P[n] || P.info
-  const world = useStore((s) => (s.theme === 'neo' || s.theme === 'babel' ? s.theme : null))
-  if (world === 'babel') {
-    // بابل: أيقونات من آثار بابل نفسها، بنقش بارز مثل حيوانات بوابة عشتار
-    const b = BP[n] || p
+  const world = useStore((s) => (s.theme === 'neo' || s.theme === 'diary' ? s.theme : null))
+  if (world === 'diary') {
+    // دفتري: خربشة قلم ناعمة فوق بقعة قلم تظليل باستيل مزاحة قليلاً
     return (
-      <svg className={'i i-bab ' + className} style={style} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        {b.f && <g fill="currentColor" stroke="none" opacity=".24">{b.f}</g>}
-        {b.s}
+      <svg className={'i i-dia ' + className} style={style} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {size >= 16 && <ellipse className="blob" cx="13.6" cy="13.4" rx="7.4" ry="6.6" transform="rotate(-18 13.6 13.4)" stroke="none" />}
+        {DP[n] || p.s}
       </svg>
     )
   }

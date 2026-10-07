@@ -74,9 +74,9 @@ export default function Settings({ nav }) {
           <span className="wp"><i /><i /><i /></span>
           <b>طوكيو 2050</b><span>مدينة ليلية بأضواء نيون</span>
         </button>
-        <button className={`world w-babel ${s.theme === 'babel' ? 'on' : ''}`} onClick={() => { tap(); if (s.theme !== 'babel') { setState({ theme: 'babel' }); setTimeout(boot, 80) } }}>
+        <button className={`world w-diary ${s.theme === 'diary' ? 'on' : ''}`} onClick={() => { tap(); if (s.theme !== 'diary') { setState({ theme: 'diary' }); setTimeout(boot, 80) } }}>
           <span className="wp"><i /><i /><i /></span>
-          <b>بابل</b><span>بوابة عشتار وأسود شارع الموكب</span>
+          <b>دفتري</b><span>دفتر وردي بملصقات وشرائط</span>
         </button>
       </div>
       {!isWorld && <div className="tabs">{themes.map((t) => <button key={t.id} className={s.theme === t.id ? 'on' : ''} onClick={() => { tap(); setState({ theme: t.id }) }}>{t.n}</button>)}</div>}

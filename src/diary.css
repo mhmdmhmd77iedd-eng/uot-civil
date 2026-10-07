@@ -1,0 +1,227 @@
+/* ================= عالم «دفتري» =================
+   دفتر دراسة وردي على طريقة الـjournal والسكرابوك: ورق كريمي منقط، شرائط واشي لاصقة،
+   ملصقات بحافة بيضاء مقصوصة، خياطة متقطعة، وقلم تظليل باستيل. نهاري ومريح للعين. */
+@import '@fontsource/marhey/arabic-500.css';
+@import '@fontsource/marhey/arabic-700.css';
+@import '@fontsource/caveat/latin-600.css';
+
+:root[data-world='diary'] {
+  --bg: #fbefed; --sf: #fffaf7; --sf2: #fde8ec; --tx: #4b3540; --mu: #977a87;
+  --ln: rgba(214, 120, 152, .2); --ln2: rgba(214, 120, 152, .14); --grid: rgba(224, 96, 140, .07);
+  --ac: #e0608c; --ac2: #f08aa8; --acs: #fde4ec; --gold: #f2b84b; --good: #5fa673; --mid: #e39a32; --bad: #e0565f;
+  --pink: #f4a3bd; --rose: #e0608c; --butter: #fbe3a0; --mint: #cfe8d3; --lilac: #ddd0f5; --peach: #fdd5c0; --sky: #cfe3f5;
+  --grad: linear-gradient(135deg, #f7aec5, #e8799c);
+  --grad-warm: linear-gradient(135deg, #fbd56b, #f4a35f);
+  --sh: 0 1px 0 rgba(214, 120, 152, .14), 0 8px 18px -12px rgba(150, 70, 100, .35);
+  --sh2: 0 16px 36px -14px rgba(150, 70, 100, .35);
+  --hd: 'Marhey', 'Readex Pro', sans-serif;
+  --hand: 'Caveat', cursive;
+  --r: 12px;
+  accent-color: var(--rose);
+  /* شرائط الواشي: مقلّم وردي، منقّط بنفسجي، مربعات نعناعي */
+  --tape1: repeating-linear-gradient(-45deg, rgba(244, 163, 189, .82) 0 6px, rgba(253, 220, 230, .82) 6px 12px);
+  --tape2: radial-gradient(circle at 4px 4px, rgba(255, 255, 255, .9) 1.6px, transparent 2px) 0 0 / 9px 9px, rgba(205, 182, 240, .8);
+  --tape3: linear-gradient(90deg, rgba(255, 255, 255, .45) 50%, transparent 0) 0 0 / 10px 10px, linear-gradient(rgba(255, 255, 255, .45) 50%, transparent 0) 0 0 / 10px 10px, rgba(170, 214, 180, .8);
+  --tape4: repeating-linear-gradient(90deg, rgba(251, 213, 107, .8) 0 5px, rgba(255, 240, 200, .8) 5px 10px);
+}
+:root[data-world='diary'] ::selection { background: var(--pink); color: #fff; }
+:root[data-world='diary'] body { background: var(--bg); color: var(--tx); }
+/* ورق منقط مثل دفاتر الـbullet journal، مع بقع ألوان مائية خفيفة */
+:root[data-world='diary'] body::before { height: 100%; -webkit-mask-image: none; mask-image: none;
+  background: radial-gradient(50% 30% at 100% 0%, rgba(247, 174, 197, .35), transparent 70%), radial-gradient(45% 25% at 0% 35%, rgba(221, 208, 245, .35), transparent 70%), radial-gradient(50% 30% at 100% 85%, rgba(251, 227, 160, .3), transparent 70%), radial-gradient(circle, rgba(200, 130, 155, .32) 1.1px, transparent 1.5px) 0 0 / 20px 20px; }
+:root[data-world='diary'] body::after { opacity: .05; }
+:root[data-world='diary'] .screen { animation: diain .5s var(--spring) both; }
+@keyframes diain { from { opacity: 0; transform: translateY(12px) rotate(-.6deg); } to { opacity: 1; transform: none; } }
+:root[data-world='diary'] .stagger > * { animation: diain .5s var(--spring) both; }
+
+/* ---------- الخطوط والعناوين ---------- */
+:root[data-world='diary'] :is(h1, h2, h3, .hd) { font-family: var(--hd); font-weight: 700; color: var(--tx); letter-spacing: 0; }
+:root[data-world='diary'] :is(.top h1, .bar h2) { line-height: 1.6; text-decoration: underline; text-decoration-color: rgba(247, 174, 197, .6); text-decoration-thickness: .42em; text-underline-offset: -.22em; text-decoration-skip-ink: none; }
+:root[data-world='diary'] .top h1 { font-size: 21px; }
+:root[data-world='diary'] .top .hi { color: var(--mu); font-family: var(--hd); font-weight: 500; }
+:root[data-world='diary'] .top .hi .i { color: var(--rose); }
+:root[data-world='diary'] .top .logo { border-radius: 50%; box-shadow: 0 0 0 3px #fff, 0 6px 14px -6px rgba(150, 70, 100, .5); transform: rotate(-6deg); }
+:root[data-world='diary'] .bar h2 { font-size: 20px; text-decoration-color: rgba(251, 213, 107, .7); }
+:root[data-world='diary'] .sec { font-family: var(--hd); font-weight: 700; color: var(--tx); font-size: 14.5px; justify-content: flex-start; gap: 8px; }
+:root[data-world='diary'] .sec::before { content: ''; width: 18px; height: 18px; flex: none; background: url(/diary/heart.svg) center / contain no-repeat; }
+/* خط متموج مرسوم باليد بعد العنوان */
+:root[data-world='diary'] .sec::after { content: ''; flex: 1; height: 8px; order: 1; opacity: .6;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8'%3E%3Cpath d='M0 4q6-5 12 0t12 0' fill='none' stroke='%23e8799c' stroke-width='1.6'/%3E%3C/svg%3E") 0 50% / 24px 8px repeat-x; }
+:root[data-world='diary'] .sec button { order: 2; color: var(--rose); font-family: var(--hd); }
+
+/* ---------- الأسطح: ورق كريمي ---------- */
+:root[data-world='diary'] :is(.card, .row, .crow, .tile, .prow, .gcard, .ann, .prod, .xrow, .today, .rmap, .ubar, .unitsum, .switchrow, .cmt, .demo, .qband, .install) {
+  border-radius: 10px; background: var(--sf); box-shadow: var(--sh), inset 0 0 0 1px rgba(214, 120, 152, .14);
+}
+/* البطاقات: ورقة مثبتة بشريط واشي */
+:root[data-world='diary'] .card { position: relative; }
+:root[data-world='diary'] .card::before { content: ''; position: absolute; top: -9px; left: 50%; width: 74px; height: 19px; margin-left: -37px; transform: rotate(-3deg); background: var(--tape1); pointer-events: none; z-index: 1;
+  clip-path: polygon(0 8%, 4% 0, 8% 10%, 12% 0, 88% 0, 92% 10%, 96% 0, 100% 8%, 100% 92%, 96% 100%, 92% 90%, 88% 100%, 12% 100%, 8% 90%, 4% 100%, 0 92%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .05); }
+:root[data-world='diary'] .card:nth-of-type(3n+2)::before { background: var(--tape2); transform: rotate(2.5deg); left: 18%; }
+:root[data-world='diary'] .card:nth-of-type(3n)::before { background: var(--tape3); transform: rotate(-1.5deg); left: 78%; }
+/* الصفوف: شريط ورق بخياطة متقطعة */
+:root[data-world='diary'] :is(.row, .crow, .xrow, .prow) { outline: 1.5px dashed rgba(224, 96, 140, .22); outline-offset: -5px; }
+:root[data-world='diary'] :is(.row, .crow, .tile, .prow, .prod, .xrow):active { transform: scale(.97) rotate(-.6deg); }
+@media (hover: hover) { :root[data-world='diary'] :is(.row, .crow, .prod, .xrow):hover { transform: translateY(-2px) rotate(-.4deg); box-shadow: var(--sh2), inset 0 0 0 1px rgba(214, 120, 152, .25); } }
+:root[data-world='diary'] .row .ic { border-radius: 50%; color: var(--tx); background: color-mix(in srgb, var(--h) 18%, #fff); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--h) 30%, #fff); }
+:root[data-world='diary'] .chev { color: var(--pink); }
+
+/* المربعات: أوراق ملاحظات لاصقة بألوان باستيل، مايلة شوية */
+:root[data-world='diary'] .tile { font-family: var(--hd); font-weight: 500; font-size: 12px; color: var(--tx); border-radius: 4px 4px 14px 4px; background: #fff3c8; box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 10px 14px -12px rgba(120, 70, 40, .6); transform: rotate(-1.2deg); }
+:root[data-world='diary'] .tile:nth-child(4n+2) { background: #fde0ea; transform: rotate(1.4deg); }
+:root[data-world='diary'] .tile:nth-child(4n+3) { background: #e6f3e6; transform: rotate(-.6deg); }
+:root[data-world='diary'] .tile:nth-child(4n) { background: #ebe3fa; transform: rotate(1deg); }
+:root[data-world='diary'] .tile:active { transform: scale(.93) rotate(0); }
+@media (hover: hover) { :root[data-world='diary'] .tile:hover { transform: translateY(-3px) rotate(0); } }
+:root[data-world='diary'] .tile .e { border-radius: 50%; color: var(--tx); background: rgba(255, 255, 255, .7); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .9), 0 3px 8px -4px rgba(150, 70, 100, .4); }
+:root[data-world='diary'] .tile:hover .e { transform: scale(1.08) rotate(-6deg); }
+:root[data-world='diary'] :is(.crow .cb, .install .ic, .empty .e) { border-radius: 50%; color: var(--tx); background: var(--acs); box-shadow: inset 0 0 0 1.5px #fff; }
+:root[data-world='diary'] .crow .cb { font-family: 'Readex Pro', sans-serif; font-weight: 600; font-size: 11px; color: var(--rose); }
+:root[data-world='diary'] .empty .e { background: url(/diary/cloud.svg) center / 86% no-repeat, var(--acs); }
+:root[data-world='diary'] .empty .e .i { opacity: 0; }
+:root[data-world='diary'] .empty { font-family: var(--hd); }
+
+/* بقعة قلم التظليل خلف الأيقونات */
+.i-dia .blob { fill: var(--blob, rgba(247, 174, 197, .55)); }
+:root[data-world='diary'] .tile .i-dia .blob { fill: rgba(247, 174, 197, .55); }
+:root[data-world='diary'] .tile:nth-child(4n+2) .i-dia .blob { fill: rgba(251, 213, 107, .6); }
+:root[data-world='diary'] .tile:nth-child(4n+3) .i-dia .blob { fill: rgba(205, 182, 240, .6); }
+:root[data-world='diary'] .tile:nth-child(4n) .i-dia .blob { fill: rgba(170, 214, 180, .7); }
+:root[data-world='diary'] .row .ic .i-dia .blob { fill: color-mix(in srgb, var(--h) 30%, transparent); }
+:root[data-world='diary'] :is(.btn, .chip, .pill, .iconbtn.ac, .nav button) .i-dia .blob { display: none; }
+
+/* ---------- الأزرار: حبوب وردية بخياطة بيضاء ---------- */
+:root[data-world='diary'] .btn { border-radius: 999px; font-family: var(--hd); font-weight: 700; background: #fff; color: var(--rose); box-shadow: inset 0 0 0 1.5px rgba(224, 96, 140, .4), 0 4px 10px -6px rgba(150, 70, 100, .4); }
+:root[data-world='diary'] .btn.ac { background: var(--grad); color: #fff; outline: 1.5px dashed rgba(255, 255, 255, .8); outline-offset: -5px; box-shadow: 0 8px 18px -8px rgba(224, 96, 140, .7), inset 0 1px 0 rgba(255, 255, 255, .4); text-shadow: 0 1px 0 rgba(180, 60, 100, .3); }
+:root[data-world='diary'] .btn.soft { background: var(--acs); color: var(--rose); box-shadow: none; }
+:root[data-world='diary'] .btn.ghost { background: transparent; color: var(--tx); box-shadow: inset 0 0 0 1.5px rgba(75, 53, 64, .2); }
+:root[data-world='diary'] .btn.warm { background: var(--grad-warm); color: #5a3a12; }
+:root[data-world='diary'] .btn.danger { background: #fff1f1; color: var(--bad); box-shadow: inset 0 0 0 1.5px rgba(224, 86, 95, .45); }
+:root[data-world='diary'] .iconbtn { border-radius: 50%; background: #fff; color: var(--rose); box-shadow: inset 0 0 0 1.5px rgba(224, 96, 140, .3), 0 4px 10px -6px rgba(150, 70, 100, .4); }
+:root[data-world='diary'] .iconbtn.ac { background: var(--grad); color: #fff; }
+/* الرقاقات: بطاقات أسعار صغيرة بثقب */
+:root[data-world='diary'] .chip { border-radius: 999px; border-color: rgba(224, 96, 140, .25); background: #fff; font-family: var(--hd); font-size: 13px; color: var(--tx); }
+:root[data-world='diary'] .chip.on { background: var(--pink); border-color: var(--pink); color: #fff; transform: rotate(-2deg); }
+:root[data-world='diary'] :is(.seg, .tabs) { border-radius: 999px; background: #fff; box-shadow: inset 0 0 0 1.5px rgba(224, 96, 140, .2); }
+:root[data-world='diary'] :is(.seg button, .tabs button) { border-radius: 999px; font-family: var(--hd); font-size: 13px; }
+:root[data-world='diary'] :is(.seg button.on, .tabs button.on) { background: var(--tape1); color: var(--tx); box-shadow: none; font-weight: 700; }
+:root[data-world='diary'] .pill { border-radius: 999px; font-family: var(--hd); font-weight: 500; font-size: 11px; }
+:root[data-world='diary'] .linkrow { font-family: var(--hd); color: var(--rose); }
+:root[data-world='diary'] :is(.pbox, .task .ck) { border-radius: 50%; }
+/* الحقول: سطر دفتر */
+:root[data-world='diary'] :is(.input, select.input, textarea.input) { border-radius: 10px; border: 1.5px dashed rgba(224, 96, 140, .3); background: #fff; color: var(--tx); }
+:root[data-world='diary'] .input:focus { border-style: solid; border-color: var(--pink); box-shadow: 0 0 0 4px rgba(247, 174, 197, .25); }
+:root[data-world='diary'] .field > span { font-family: var(--hd); font-size: 12.5px; color: var(--mu); }
+:root[data-world='diary'] .sw:checked { background: var(--pink); }
+
+/* ---------- البطاقة الكبيرة: صفحة دفتر مسطّرة بهامش وملصقات ---------- */
+:root[data-world='diary'] .hero { border-radius: 6px 6px 18px 6px; color: var(--tx); overflow: visible; margin-top: 8px;
+  background: linear-gradient(90deg, transparent calc(100% - 30px), rgba(240, 120, 150, .45) calc(100% - 30px), rgba(240, 120, 150, .45) calc(100% - 28.5px), transparent calc(100% - 28.5px)),
+    repeating-linear-gradient(transparent 0 25px, rgba(150, 180, 220, .38) 25px 26px), #fffdf8;
+  background-position: 0 0, 0 14px, 0 0;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 14px 28px -16px rgba(150, 70, 100, .5), inset 0 0 0 1px rgba(214, 120, 152, .14); }
+:root[data-world='diary'] .hero.exam { background: linear-gradient(90deg, transparent calc(100% - 30px), rgba(240, 120, 150, .5) calc(100% - 30px), rgba(240, 120, 150, .5) calc(100% - 28.5px), transparent calc(100% - 28.5px)), repeating-linear-gradient(transparent 0 25px, rgba(240, 150, 120, .35) 25px 26px), #fff6ef; background-position: 0 0, 0 14px, 0 0; }
+:root[data-world='diary'] .hero .deco, :root[data-world='diary'] .hero .grid { display: none; }
+/* شريط لاصق بالزاوية + فيونكة */
+:root[data-world='diary'] .hero::before { content: ''; display: block; position: absolute; top: -10px; right: 18px; left: auto; bottom: auto; width: 86px; height: 22px; border-radius: 0; transform: rotate(4deg); opacity: 1; z-index: 2; background: var(--tape2); filter: none; animation: none;
+  clip-path: polygon(0 8%, 4% 0, 8% 10%, 12% 0, 88% 0, 92% 10%, 96% 0, 100% 8%, 100% 92%, 96% 100%, 92% 90%, 88% 100%, 12% 100%, 8% 90%, 4% 100%, 0 92%); }
+:root[data-world='diary'] .hero::after { content: ''; position: absolute; z-index: 2; left: -8px; top: -14px; right: auto; bottom: auto; width: 62px; height: 50px; border-radius: 0; opacity: 1; animation: wob 4s ease-in-out infinite; filter: drop-shadow(0 3px 3px rgba(150, 70, 100, .3)); background: url(/diary/bow.svg) center / contain no-repeat; }
+@keyframes wob { 50% { transform: rotate(-8deg) scale(1.04); } }
+:root[data-world='diary'] .hero > * { position: relative; z-index: 1; }
+:root[data-world='diary'] .hero .l { color: var(--rose); font-family: var(--hd); margin-top: 8px; }
+:root[data-world='diary'] .hero .s { font-family: var(--hd); font-weight: 700; font-size: 19px; color: var(--tx); }
+:root[data-world='diary'] .hero :is(.m, .sub, p, span) { color: var(--mu); }
+:root[data-world='diary'] .hero .cd > div { border-radius: 3px; background: #fff3c8; color: var(--tx); box-shadow: 0 6px 10px -8px rgba(120, 70, 40, .6); transform: rotate(-2deg); }
+:root[data-world='diary'] .hero .cd > div:nth-child(2n) { background: #fde0ea; transform: rotate(2deg); }
+:root[data-world='diary'] .hero .cd > div:nth-child(3n) { background: #e6f3e6; }
+:root[data-world='diary'] .hero .cd b { font-family: var(--hd); color: var(--rose); }
+:root[data-world='diary'] .hero .cd span { color: var(--mu); }
+:root[data-world='diary'] .hero .btn { background: #fff; color: var(--rose); }
+
+/* ---------- رأس صفحة الدفتر بالرئيسية ---------- */
+.dia-strip { position: relative; margin: 4px 2px 22px; padding: 16px 16px 14px; padding-left: 112px; border-radius: 4px 4px 4px 22px; transform: rotate(-.8deg);
+  background: radial-gradient(circle, rgba(224, 96, 140, .22) 1px, transparent 1.4px) 0 0 / 14px 14px, #fff;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 12px 24px -14px rgba(150, 70, 100, .5); }
+.dia-strip .tape { position: absolute; width: 64px; height: 18px; top: -8px; clip-path: polygon(0 8%, 4% 0, 8% 10%, 12% 0, 88% 0, 92% 10%, 96% 0, 100% 8%, 100% 92%, 96% 100%, 92% 90%, 88% 100%, 12% 100%, 8% 90%, 4% 100%, 0 92%); }
+.dia-strip .t1 { right: 14px; transform: rotate(-6deg); background: var(--tape1); }
+.dia-strip .t2 { left: 30%; transform: rotate(4deg); background: var(--tape4); }
+.dia-strip .date { display: grid; gap: 1px; }
+.dia-strip .hand { font-family: var(--hand); font-weight: 600; font-size: 21px; line-height: 1; color: var(--rose); direction: ltr; text-align: right; }
+.dia-strip b { font-family: var(--hd); font-weight: 700; font-size: 16px; color: var(--tx); }
+.dia-strip .note { font-family: var(--hd); font-size: 12px; color: var(--mu); }
+.dia-strip img { position: absolute; filter: drop-shadow(0 3px 3px rgba(150, 70, 100, .28)); }
+.dia-strip .k1 { width: 64px; left: 36px; top: 8px; transform: rotate(-12deg); animation: wob 5s ease-in-out infinite; }
+.dia-strip .k2 { width: 38px; left: 10px; bottom: -10px; transform: rotate(14deg); }
+.dia-strip .k3 { width: 34px; left: 74px; bottom: -6px; transform: rotate(-8deg); animation: wob 3.6s ease-in-out infinite reverse; }
+
+/* ---------- الشريط السفلي: شريط ورق مخيط، والتبويب المفتوح عليه قلب ---------- */
+:root[data-world='diary'] .nav { border-radius: 22px; background: rgba(255, 250, 247, .94); box-shadow: 0 14px 30px -12px rgba(150, 70, 100, .45), inset 0 0 0 1.5px rgba(224, 96, 140, .18); outline: 1.5px dashed rgba(224, 96, 140, .3); outline-offset: -6px; }
+:root[data-world='diary'] .nav button { font-family: var(--hd); font-size: 10.5px; color: var(--mu); position: relative; }
+:root[data-world='diary'] .nav button.on { background: none; color: var(--rose); box-shadow: none; font-weight: 700; }
+:root[data-world='diary'] .nav button.on .i { transform: translateY(-2px) rotate(-6deg) scale(1.1); }
+:root[data-world='diary'] .nav button.on::before { content: ''; position: absolute; top: 2px; left: 50%; width: 36px; height: 30px; margin-left: -18px; z-index: -1; background: url(/diary/heart.svg) center / contain no-repeat; opacity: .55; animation: pop .45s var(--spring); }
+@keyframes pop { from { transform: scale(.3) rotate(-20deg); } to { transform: none; } }
+:root[data-world='diary'] .navdot { background: var(--rose); box-shadow: 0 0 0 2px #fff; }
+
+:root[data-world='diary'] .sheet { border-radius: 22px 22px 0 0; background: radial-gradient(circle, rgba(200, 130, 155, .22) 1px, transparent 1.4px) 0 0 / 18px 18px, #fffaf7; }
+:root[data-world='diary'] .sheet .grab { width: 70px; height: 16px; border-radius: 0; background: var(--tape1); clip-path: polygon(0 8%, 6% 0, 12% 10%, 18% 0, 82% 0, 88% 10%, 94% 0, 100% 8%, 100% 92%, 94% 100%, 88% 90%, 82% 100%, 18% 100%, 12% 90%, 6% 100%, 0 92%); }
+/* التنبيه: ورقة لاصقة صفراء */
+:root[data-world='diary'] .toast { border-radius: 3px 3px 14px 3px; background: #fff3c8; color: var(--tx); font-family: var(--hd); box-shadow: 0 12px 24px -12px rgba(120, 70, 40, .6); rotate: -1.5deg; }
+:root[data-world='diary'] .foot { font-family: var(--hd); font-size: 11px; color: var(--mu); }
+:root[data-world='diary'] .wm { opacity: .5; }
+:root[data-world='diary'] :is(.big, .ut b) { font-family: var(--hd); color: var(--rose); }
+:root[data-world='diary'] .bboard { border-radius: 10px; color: var(--tx); padding-left: 64px;
+  background: url(/diary/letter.svg) 12px 50% / 42px no-repeat, repeating-linear-gradient(transparent 0 21px, rgba(240, 150, 180, .25) 21px 22px), #fff8fa;
+  box-shadow: var(--sh), inset 0 0 0 1px rgba(214, 120, 152, .18); outline: 2px dotted rgba(224, 96, 140, .35); outline-offset: -6px; }
+:root[data-world='diary'] .bb-grid { display: none; }
+:root[data-world='diary'] .bb-tag { color: var(--rose); text-shadow: none; font-family: var(--hd); letter-spacing: 0; }
+:root[data-world='diary'] .bb-tag i { background: var(--rose); box-shadow: none; }
+:root[data-world='diary'] .bb-t { font-family: var(--hd); color: var(--tx); }
+:root[data-world='diary'] .bb-b { color: var(--mu); }
+:root[data-world='diary'] .bb-dots i { background: rgba(224, 96, 140, .2); }
+:root[data-world='diary'] .bb-dots i.on { background: var(--pink); box-shadow: none; }
+:root[data-world='diary'] .bb-go { display: none; }
+
+/* ---------- الملصق اللي يطلع مكان اللمسة ---------- */
+.dia-pop { position: fixed; z-index: 90; width: 30px; height: 30px; pointer-events: none; transform: translate(-50%, -50%); filter: drop-shadow(0 2px 2px rgba(150, 70, 100, .3)); animation: diapop .8s var(--spring) forwards; }
+@keyframes diapop { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(0); } 25% { opacity: 1; transform: translate(-50%, -60%) scale(1.1) rotate(var(--r)); } 100% { opacity: 0; transform: translate(-50%, -150%) scale(.8) rotate(var(--r)); } }
+
+/* ---------- شاشة الدخول: غلاف دفتر بملصقات ينفتح ---------- */
+.dia-cover { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; perspective: 1400px; background: radial-gradient(circle, rgba(200, 130, 155, .3) 1.1px, transparent 1.5px) 0 0 / 20px 20px, #fbefed; animation: covout .5s 2.25s ease-in forwards; }
+.dia-cover .book { position: relative; width: min(280px, 72vw); aspect-ratio: 3 / 4; transform-style: preserve-3d; animation: bookin .6s var(--spring, cubic-bezier(.34,1.4,.64,1)) both; }
+.dia-cover .page, .dia-cover .lid { position: absolute; inset: 0; border-radius: 6px 16px 16px 6px; }
+.dia-cover .page { display: grid; place-items: center; background: repeating-linear-gradient(transparent 0 23px, rgba(150, 180, 220, .4) 23px 24px), #fffdf8; box-shadow: 0 20px 40px -18px rgba(150, 70, 100, .6); }
+.dia-cover .page .hand { font-family: 'Caveat', cursive; font-weight: 600; font-size: 34px; color: #e0608c; opacity: 0; animation: gtxt .5s 1.5s ease forwards; }
+.dia-cover .lid { transform-origin: 100% 50%; backface-visibility: hidden; display: grid; place-items: center; overflow: hidden;
+  background: radial-gradient(circle at 6px 6px, rgba(255, 255, 255, .55) 1.6px, transparent 2px) 0 0 / 14px 14px, linear-gradient(150deg, #f7b2c8, #ec8cab);
+  box-shadow: inset 6px 0 0 rgba(0, 0, 0, .06), inset -2px 0 0 rgba(255, 255, 255, .3), 0 24px 44px -18px rgba(150, 70, 100, .7); animation: lidopen 1s 1.2s cubic-bezier(.6, 0, .3, 1) forwards; }
+.dia-cover .label { position: relative; z-index: 1; display: grid; text-align: center; gap: 0; padding: 14px 26px 12px; background: #fffaf7; border-radius: 8px; transform: rotate(-3deg); outline: 1.5px dashed rgba(224, 96, 140, .45); outline-offset: -6px; box-shadow: 0 8px 16px -8px rgba(120, 40, 70, .5); }
+.dia-cover .label b { font-family: 'Marhey', sans-serif; font-weight: 700; font-size: 34px; line-height: 1.4; color: #4b3540; }
+.dia-cover .label .hand { font-family: 'Caveat', cursive; font-weight: 600; font-size: 20px; color: #e0608c; }
+.dia-cover .tape { position: absolute; top: 14px; right: -12px; width: 96px; height: 22px; transform: rotate(34deg); background: repeating-linear-gradient(90deg, rgba(251, 213, 107, .9) 0 6px, rgba(255, 240, 200, .9) 6px 12px); }
+.dia-cover img { position: absolute; filter: drop-shadow(0 3px 3px rgba(120, 40, 70, .3)); animation: stick .4s var(--spring, cubic-bezier(.34,1.4,.64,1)) both; }
+.dia-cover .s1 { width: 30%; left: 8%; top: 7%; transform: rotate(-14deg); animation-delay: .25s; }
+.dia-cover .s2 { width: 22%; right: 10%; bottom: 22%; transform: rotate(10deg); animation-delay: .4s; }
+.dia-cover .s3 { width: 22%; left: 10%; bottom: 8%; transform: rotate(-8deg); animation-delay: .55s; }
+.dia-cover .s4 { width: 18%; right: 12%; top: 22%; transform: rotate(12deg); animation-delay: .7s; }
+.dia-cover .s5 { width: 20%; left: 40%; bottom: 4%; transform: rotate(6deg); animation-delay: .85s; }
+@keyframes stick { from { opacity: 0; scale: 1.8; } to { opacity: 1; scale: 1; } }
+@keyframes bookin { from { opacity: 0; transform: translateY(30px) rotate(-4deg); } to { opacity: 1; transform: none; } }
+@keyframes lidopen { to { transform: rotateY(-165deg); } }
+@keyframes covout { to { opacity: 0; visibility: hidden; transform: scale(1.08); } }
+@keyframes gtxt { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* ---------- بطاقة اختيار العالم ---------- */
+.w-diary { background: #fff6f4; color: #4b3540; }
+.w-diary .wp { background: radial-gradient(circle, rgba(224, 96, 140, .3) 1px, transparent 1.4px) 0 0 / 10px 10px, #fde4ec; align-items: center; justify-content: center; }
+.w-diary .wp i { display: none; }
+.w-diary .wp::before { content: ''; position: absolute; top: 4px; right: 8px; width: 40px; height: 11px; transform: rotate(-6deg); background: repeating-linear-gradient(-45deg, rgba(244, 163, 189, .9) 0 4px, rgba(255, 230, 238, .9) 4px 8px); }
+.w-diary .wp::after { content: ''; width: 64%; height: 70%; background: url(/diary/bow.svg) center / contain no-repeat; filter: drop-shadow(0 2px 2px rgba(150, 70, 100, .3)); }
+.w-diary b { font-family: 'Marhey', sans-serif; color: #e0608c; }
+:root[data-world='diary'] .world { border-radius: 14px; }
+:root[data-world='diary'] .world.on { box-shadow: 0 0 0 2.5px var(--pink), var(--sh2); }
+:root[data-world='diary'] .world.on::after { background: var(--rose); }
+
+@media (prefers-reduced-motion: reduce) { .dia-pop { display: none; } .dia-strip img, :root[data-world='diary'] .hero::after { animation: none; } }
+@media print { .dia-cover, .dia-pop, .dia-strip { display: none !important; } }

@@ -4,8 +4,8 @@ import { useSyncExternalStore } from 'react'
 const KEY = 'almadani:v1'
 const BK = 'almadani:backups'
 // العوالم الكاملة اللي يختارها الطالب من «حسابي»
-export const WORLDS = ['neo', 'babel']
-export const VERSION = '1.8.1'
+export const WORLDS = ['neo', 'diary']
+export const VERSION = '1.9.0'
 
 const initial = {
   profile: null, // { branch, stage, shift, name }
@@ -43,6 +43,8 @@ function safeSet(k, v) { try { localStorage.setItem(k, v); return true } catch {
 let state = (() => {
   try { return { ...initial, ...JSON.parse(safeGet(KEY) || '{}') } } catch { return { ...initial } }
 })()
+// عالم «بابل» انشال وصار مكانه «دفتري»
+if (state.theme === 'babel') state.theme = 'diary'
 const subs = new Set()
 
 function persist() {

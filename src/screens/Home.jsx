@@ -1,3 +1,4 @@
+import { DiaryStrip } from '../components/DiaryStrip'
 import { useStore } from '../lib/store'
 import { semCourses, courseById } from '../data/catalog'
 import { ViewAs } from '../components/ViewAs'
@@ -65,12 +66,7 @@ export default function Home({ nav }) {
         </div>
         <img className="logo" src="icons/icon-192.png" alt="المدني" />
       </div>
-      {s.theme === 'babel' && (
-        // شارع الموكب: أسود بابل تمشي على آجر بوابة عشتار
-        <div className="bab-frieze" aria-hidden="true">
-          <div className="walk">{Array.from({ length: 10 }, (_, k) => <img key={k} src="babel/lion.svg" alt="" />)}</div>
-        </div>
-      )}
+      {s.theme === 'diary' && <DiaryStrip />}
       <ViewAs />
 
       {showExam ? (
