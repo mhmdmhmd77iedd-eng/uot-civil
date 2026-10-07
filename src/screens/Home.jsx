@@ -54,7 +54,8 @@ export default function Home({ nav }) {
     { i: 'ask', h: HUES.clay, t: 'الطلبات', go: 'requests' },
     { i: 'bag', h: HUES.amber, t: 'المتجر', go: 'store' },
     { i: 'cap', h: HUES.bronze, t: 'دليل بولونيا', go: 'bologna' },
-    ...(isStaff(a) ? [{ i: 'shield', h: HUES.teal, t: 'لوحة المطوّر', go: 'devpanel' }] : [{ i: 'hardhat', h: HUES.teal, t: 'المطوّر', go: 'developer' }]),
+    { i: 'hardhat', h: HUES.teal, t: 'المطوّر', go: 'developer' },
+    ...(isStaff(a) ? [{ i: 'shield', h: HUES.teal, t: 'لوحة المطوّر', go: 'devpanel' }] : []),
   ]
 
   return (
