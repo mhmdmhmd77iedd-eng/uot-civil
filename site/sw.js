@@ -8,6 +8,21 @@ self.addEventListener('install', (e) => { e.waitUntil(caches.open(V).then((c) =>
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== V && !KEEP.includes(k)).map((k) => caches.delete(k)))).then(() => self.clients.claim()))
 })
+// تنبيهات الخادم (كوزات، تقارير، امتحانات) توصل حتى لو التطبيق مسدود
+self.addEventListener('push', (e) => {
+  let d = {}
+  try { d = e.data ? e.data.json() : {} } catch {}
+  if (!d.title) return
+  e.waitUntil(self.registration.showNotification(d.title, { body: d.body || '', tag: d.tag, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', dir: 'rtl', lang: 'ar', data: { url: './' } }))
+})
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close()
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((ws) => {
+    const w = ws.find((x) => 'focus' in x)
+    return w ? w.focus() : self.clients.openWindow('./')
+  }))
+})
+
 self.addEventListener('fetch', (e) => {
   const r = e.request
   if (r.method !== 'GET') return
