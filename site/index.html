@@ -14,11 +14,11 @@
       try {
         var s = JSON.parse(localStorage.getItem('almadani:v1') || '{}'), t = s.theme || 'auto', de = document.documentElement
         if (t === 'babel') t = 'diary'
-        var w = t === 'neo' || t === 'diary' ? t : null, m = w === 'diary' ? s.diaryNight || 'auto' : w === 'neo' ? 'dark' : t
+        var w = t === 'neo' || t === 'diary' || t === 'site' ? t : null, m = w === 'diary' ? s.diaryNight || 'auto' : w === 'site' ? s.siteNight || 'auto' : w === 'neo' ? 'dark' : t
         var dk = m === 'dark' || (m === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches)
         de.dataset.theme = dk ? 'dark' : 'light'
         if (w) de.dataset.world = w
-        document.querySelector('meta[name=theme-color]').setAttribute('content', w === 'neo' ? '#06070f' : w === 'diary' ? (dk ? '#241a1d' : '#fbefed') : dk ? '#121518' : '#f7f5f0')
+        document.querySelector('meta[name=theme-color]').setAttribute('content', w === 'neo' ? '#06070f' : w === 'diary' ? (dk ? '#241a1d' : '#fbefed') : w === 'site' ? (dk ? '#0a0d16' : '#efede6') : dk ? '#121518' : '#f7f5f0')
       } catch (e) {}
     </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -35,12 +35,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <style>html,body{background:#f7f5f0}@media (prefers-color-scheme:dark){html,body{background:#121518}}</style>
-    <script type="module" crossorigin src="./assets/index-KNggVtmS.js"></script>
+    <script type="module" crossorigin src="./assets/index-BcCVpuCb.js"></script>
     <link rel="modulepreload" crossorigin href="./assets/rolldown-runtime-Dd_uD5pT.js">
-    <link rel="modulepreload" crossorigin href="./assets/icons-Cv-TlbQJ.js">
-    <link rel="modulepreload" crossorigin href="./assets/sb-D3CovgMa.js">
-    <link rel="modulepreload" crossorigin href="./assets/profile-C3TpFbHY.js">
-    <link rel="stylesheet" crossorigin href="./assets/index-DFG8cjcO.css">
+    <link rel="modulepreload" crossorigin href="./assets/icons-D8mEWvoy.js">
+    <link rel="modulepreload" crossorigin href="./assets/sb-DQxSK3xv.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-C89YriHR.css">
   </head>
   <body>
     <div id="root"></div>
