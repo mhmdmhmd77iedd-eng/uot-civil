@@ -14,12 +14,12 @@
       try {
         var s = JSON.parse(localStorage.getItem('almadani:v1') || '{}'), t = s.theme || 'auto', de = document.documentElement
         if (t === 'babel') t = 'diary'
-        var w = t === 'neo' || t === 'diary' || t === 'site' || t === 'magic' ? t : null, m = w === 'diary' ? s.diaryNight || 'auto' : w === 'site' ? s.siteNight || 'auto' : w === 'neo' ? s.tokyoNight || 'auto' : w === 'magic' ? s.magicNight || 'auto' : t
-        var dk = m === 'dark' || (m === 'auto' && (w === 'neo' || w === 'magic' ? (new Date().getHours() >= 18 || new Date().getHours() < 6) : matchMedia('(prefers-color-scheme: dark)').matches))
+        if (t === 'magic') t = 'auto'
+        var w = t === 'neo' || t === 'diary' || t === 'site' ? t : null, m = w === 'diary' ? s.diaryNight || 'auto' : w === 'site' ? s.siteNight || 'auto' : w === 'neo' ? s.tokyoNight || 'auto' : t
+        var dk = m === 'dark' || (m === 'auto' && (w === 'neo' ? (new Date().getHours() >= 18 || new Date().getHours() < 6) : matchMedia('(prefers-color-scheme: dark)').matches))
         de.dataset.theme = dk ? 'dark' : 'light'
         if (w) de.dataset.world = w
-        if (w === 'magic') de.dataset.house = s.magicHouse || 'phoenix'
-        document.querySelector('meta[name=theme-color]').setAttribute('content', w === 'neo' ? (dk ? '#0b0818' : '#1f7d96') : w === 'diary' ? (dk ? '#241a1d' : '#fbefed') : w === 'site' ? (dk ? '#0a0d16' : '#efede6') : w === 'magic' ? (dk ? '#140d09' : '#efe3c8') : dk ? '#121518' : '#f7f5f0')
+        document.querySelector('meta[name=theme-color]').setAttribute('content', w === 'neo' ? (dk ? '#0b0818' : '#1f7d96') : w === 'diary' ? (dk ? '#241a1d' : '#fbefed') : w === 'site' ? (dk ? '#0a0d16' : '#efede6') : dk ? '#121518' : '#f7f5f0')
       } catch (e) {}
     </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -36,11 +36,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <style>html,body{background:#f7f5f0}@media (prefers-color-scheme:dark){html,body{background:#121518}}</style>
-    <script type="module" crossorigin src="./assets/index-DavvIlcp.js"></script>
+    <script type="module" crossorigin src="./assets/index-iheziaUL.js"></script>
     <link rel="modulepreload" crossorigin href="./assets/rolldown-runtime-Dd_uD5pT.js">
-    <link rel="modulepreload" crossorigin href="./assets/icons--tOgcPWN.js">
-    <link rel="modulepreload" crossorigin href="./assets/sb-e6C1yYX3.js">
-    <link rel="stylesheet" crossorigin href="./assets/index-CYzOD6Hu.css">
+    <link rel="modulepreload" crossorigin href="./assets/icons-CtogbTM9.js">
+    <link rel="modulepreload" crossorigin href="./assets/sb-BEZMR41G.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-DhhAGdUl.css">
   </head>
   <body>
     <div id="root"></div>
