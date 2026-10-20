@@ -1,8 +1,8 @@
 // يعمل بدون إنترنت: يخزن واجهة التطبيق، ويحدّثها بالخلفية
 // اسم الذاكرة يتبع رقم النسخة (sw.js?v=...)، فكل نسخة جديدة تمسح ملفات القديمة
 const V = 'almadani-v' + (new URL(location.href).searchParams.get('v') || '0')
-// ملفات المواد المحمّلة للاستخدام بدون نت تبقى مهما تحدّث التطبيق
-const KEEP = ['almadani-files']
+// ملفات المواد المحمّلة للاستخدام بدون نت، وأصوات قسم الإنكليزي، تبقى مهما تحدّث التطبيق
+const KEEP = ['almadani-files', 'almadani-audio']
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'dev/01-avatar-main.webp', 'dev/07-gallery-suit.webp', 'forms/bologna-reg.jpg']
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(V).then((c) => c.addAll(CORE)).then(() => self.skipWaiting())) })
 self.addEventListener('activate', (e) => {
@@ -34,6 +34,16 @@ self.addEventListener('fetch', (e) => {
   if (r.mode === 'navigate' || (same && url.pathname.endsWith('/materials.json'))) {
     const key = r.mode === 'navigate' ? 'index.html' : r
     e.respondWith(fetch(r, { cache: 'no-store' }).then((res) => { const copy = res.clone(); if (res.ok) caches.open(V).then((c) => c.put(key, copy)); return res }).catch(() => caches.match(key)))
+    return
+  }
+  // أصوات الإنكليزي: أسماء ملفاتها تتغير لما تتغير، فنحفظها بذاكرة دائمة. الفهارس (json) من الشبكة أول
+  if (same && url.pathname.includes('/audio/en/')) {
+    const AU = 'almadani-audio'
+    if (url.pathname.endsWith('.json')) {
+      e.respondWith(fetch(r, { cache: 'no-cache' }).then((res) => { const copy = res.clone(); if (res.ok) caches.open(AU).then((c) => c.put(r, copy)); return res }).catch(() => caches.open(AU).then((c) => c.match(r))))
+    } else {
+      e.respondWith(caches.open(AU).then((c) => c.match(r).then((hit) => hit || fetch(r).then((res) => { if (res.ok) c.put(r, res.clone()); return res }))))
+    }
     return
   }
   e.respondWith(caches.match(r).then((hit) => {
