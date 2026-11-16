@@ -46,7 +46,7 @@ self.addEventListener('fetch', (e) => {
     }
     return
   }
-  e.respondWith(caches.match(r).then((hit) => {
+  e.respondWith(caches.match(r, { ignoreVary: true }).then((hit) => {
     const net = fetch(r).then((res) => { if (res.ok || res.type === 'opaque') { const copy = res.clone(); caches.open(V).then((c) => c.put(r, copy)) } return res }).catch(() => hit)
     return hit || net
   }))
