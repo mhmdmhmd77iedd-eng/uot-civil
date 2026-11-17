@@ -13,13 +13,18 @@ self.addEventListener('push', (e) => {
   let d = {}
   try { d = e.data ? e.data.json() : {} } catch {}
   if (!d.title) return
-  e.waitUntil(self.registration.showNotification(d.title, { body: d.body || '', tag: d.tag, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', dir: 'rtl', lang: 'ar', data: { url: './' } }))
+  // يطلع على شاشة القفل ويهز الموبايل، والضغط عليه يفتح التبليغ نفسه
+  const url = typeof d.url === 'string' && d.url.startsWith('./') ? d.url : './'
+  e.waitUntil(self.registration.showNotification(d.title, { body: d.body || '', tag: d.tag, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', dir: 'rtl', lang: 'ar', vibrate: [120, 60, 120], timestamp: Date.now(), data: { url } }))
 })
 self.addEventListener('notificationclick', (e) => {
   e.notification.close()
+  const url = new URL(e.notification.data?.url || './', self.registration.scope).href
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((ws) => {
     const w = ws.find((x) => 'focus' in x)
-    return w ? w.focus() : self.clients.openWindow('./')
+    if (!w) return self.clients.openWindow(url)
+    // التطبيق مفتوح: نفتح التبليغ بنفس النافذة
+    return (url !== self.registration.scope && 'navigate' in w ? w.navigate(url).then((x) => (x || w).focus()) : w.focus()).catch(() => w.focus())
   }))
 })
 
